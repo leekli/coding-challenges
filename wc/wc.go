@@ -11,44 +11,52 @@ func main() {
 	argsGiven := os.Args[1:]
 
 	if !utils.HasArgs(argsGiven) {
-		panic("No arguments given")
+		panic("No arguments given.")
 	}
 
 	filePathGiven := argsGiven[len(argsGiven)-1]
 
+	if !utils.CheckFileExists(filePathGiven) {
+		panic("File does not exist, or file is not valid.")
+	}
+
 	if utils.HasArgs(argsGiven) {
-		// Count Total Bytes
 		if argsGiven[0] == "-c" {
+			// Count Total Bytes
 			totalByteCount := countBytes(filePathGiven)
 
-			formattedResult := fmt.Sprintf("  %d %s", totalByteCount, filePathGiven)
+			formattedResult := fmt.Sprintf("   %d %s", totalByteCount, filePathGiven)
 
 			fmt.Println(formattedResult)
-		}
-
-		// Count Total Lines
-		if argsGiven[0] == "-l" {
+		} else if argsGiven[0] == "-l" {
+			// Count Total Lines
 			totalLineCount := countLines(filePathGiven)
 
-			formattedResult := fmt.Sprintf("  %d %s", totalLineCount, filePathGiven)
+			formattedResult := fmt.Sprintf("   %d %s", totalLineCount, filePathGiven)
 
 			fmt.Println(formattedResult)
-		}
-
-		// Count Total Words
-		if argsGiven[0] == "-w" {
+		} else if argsGiven[0] == "-w" {
+			// Count Total Words
 			totalWordCount := countWords(filePathGiven)
 
-			formattedResult := fmt.Sprintf("  %d %s", totalWordCount, filePathGiven)
+			formattedResult := fmt.Sprintf("   %d %s", totalWordCount, filePathGiven)
 
 			fmt.Println(formattedResult)
-		}
-
+		} else if argsGiven[0] == "-m" {
 		// Count Total Characters
-		if argsGiven[0] == "-m" {
 			totalCharCount := countChars(filePathGiven)
 
-			formattedResult := fmt.Sprintf("  %d %s", totalCharCount, filePathGiven)
+			formattedResult := fmt.Sprintf("    %d %s", totalCharCount, filePathGiven)
+
+			fmt.Println(formattedResult)
+		} else {
+			filePathGiven = argsGiven[0]
+
+			totalByteCount := countBytes(filePathGiven)
+			totalLineCount := countLines(filePathGiven)
+			totalWordCount := countWords(filePathGiven)
+
+			formattedResult := fmt.Sprintf("    %d   %d   %d %s", totalLineCount, totalWordCount, totalByteCount, filePathGiven)
 
 			fmt.Println(formattedResult)
 		}
