@@ -8,20 +8,20 @@ import (
 	"wc/utils"
 )
 
+// Global variables
+var isStdIn bool = false
+var filePathGiven string
+var fileContents []byte
+
 func main() {
-	argsGiven := os.Args[1:]
+	// Retrieve any args given by the user
+	argsGiven := os.Args
 
-	filePathGiven := argsGiven[len(argsGiven)-1]
+	// First check if a standard input (stdin) pipe has been used
+	isStdIn = utils.CheckIsStdIn()
 
-	var fileContents []byte
-
-	if len(argsGiven) > 1 {
-		if !utils.CheckFileExists(filePathGiven) {
-			panic("File does not exist, or file is not valid.")
-		} else {
-			fileContents = utils.ReadFile(filePathGiven)
-		}
-	} else {
+	// If there is something in stdin, then read it and save to file contents
+	if (isStdIn) {
 		stdInput, err := io.ReadAll(os.Stdin)
 
 		if err != nil {
@@ -31,47 +31,59 @@ func main() {
 		fileContents = stdInput
 	}
 
-	if utils.HasArgs(argsGiven) {
-		if argsGiven[0] == "-c" {
+	// If no stdin, then check and then read the file name/file path given by user and save to file contents
+	if (!isStdIn) {
+		filePathGiven = argsGiven[len(argsGiven)-1]
+
+		if !utils.CheckFileExists(filePathGiven) {
+			panic("File does not exist, or file is not valid.")
+		}
+
+		fileContents = utils.ReadFile(filePathGiven)
+	}
+
+	// Check which flag the user has provided and return the result
+	if len(argsGiven) >= 2 {
+		if argsGiven[1] == "-c" {
 			// Count Total Bytes
 			totalByteCount := countBytes(fileContents)
 
 			formattedResult := fmt.Sprintf("   %d %s", totalByteCount, filePathGiven)
 
 			fmt.Println(formattedResult)
-		} else if argsGiven[0] == "-l" {
+		} else if argsGiven[1] == "-l" {
 			// Count Total Lines
 			totalLineCount := countLines(fileContents)
 
 			formattedResult := fmt.Sprintf("   %d %s", totalLineCount, filePathGiven)
 
 			fmt.Println(formattedResult)
-		} else if argsGiven[0] == "-w" {
+		} else if argsGiven[1] == "-w" {
 			// Count Total Words
 			totalWordCount := countWords(fileContents)
 
 			formattedResult := fmt.Sprintf("   %d %s", totalWordCount, filePathGiven)
 
 			fmt.Println(formattedResult)
-		} else if argsGiven[0] == "-m" {
-		// Count Total Characters
+		} else if argsGiven[1] == "-m" {
+			// Count Total Characters
 			totalCharCount := countChars(fileContents)
 
 			formattedResult := fmt.Sprintf("    %d %s", totalCharCount, filePathGiven)
 
 			fmt.Println(formattedResult)
 		} else {
-			filePathGiven = argsGiven[0]
-
-			totalByteCount := countBytes(fileContents)
-			totalLineCount := countLines(fileContents)
-			totalWordCount := countWords(fileContents)
-
-			formattedResult := fmt.Sprintf("    %d   %d   %d %s", totalLineCount, totalWordCount, totalByteCount, filePathGiven)
-
-			fmt.Println(formattedResult)
+			fmt.Println("Invalid argument flag given.")
 		}
 	}
+	
+	// If no flag has been provided, then return the total bytes, lines and words count to user
+	if (len(argsGiven) == 1 && isStdIn) || (len(argsGiven) == 2 && !isStdIn) {
+		formattedResult := countWithNoFlags()
+
+		fmt.Println(formattedResult)
+	}
+
 }
 
 func countBytes(fileContents []byte) int {
@@ -106,4 +118,14 @@ func countChars(fileContents []byte) int {
 	charCount := len(fileContents)
 
 	return charCount
+}
+
+func countWithNoFlags() string {
+	totalByteCount := countBytes(fileContents)
+	totalLineCount := countLines(fileContents)
+	totalWordCount := countWords(fileContents)
+
+	totalCountString := fmt.Sprintf("    %d   %d   %d %s", totalLineCount, totalWordCount, totalByteCount, filePathGiven)
+
+	return totalCountString
 }
