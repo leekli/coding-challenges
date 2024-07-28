@@ -35,12 +35,6 @@ Part of this Coding challenge: https://codingchallenges.fyi/challenges/challenge
 
 ## 💻 Commands & Options available
 
-- **Help:** Shows the help message, explanation of the application, and options available.
-
-  ```terminal
-  $ ./wc -h
-  ```
-
 > [!NOTE]
 > All commands below can be used either by giving a file name, or piping through standard input (stdin).
 
