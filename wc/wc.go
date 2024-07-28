@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 	"wc/utils"
 )
 
@@ -16,7 +17,7 @@ func main() {
 	filePathGiven := argsGiven[len(argsGiven)-1]
 
 	if utils.HasArgs(argsGiven) {
-		// Count Bytes
+		// Count Total Bytes
 		if argsGiven[0] == "-c" {
 			totalByteCount := countBytes(filePathGiven)
 
@@ -25,11 +26,29 @@ func main() {
 			fmt.Println(formattedResult)
 		}
 
-		// Count Lines
+		// Count Total Lines
 		if argsGiven[0] == "-l" {
 			totalLineCount := countLines(filePathGiven)
 
 			formattedResult := fmt.Sprintf("  %d %s", totalLineCount, filePathGiven)
+
+			fmt.Println(formattedResult)
+		}
+
+		// Count Total Words
+		if argsGiven[0] == "-w" {
+			totalWordCount := countWords(filePathGiven)
+
+			formattedResult := fmt.Sprintf("  %d %s", totalWordCount, filePathGiven)
+
+			fmt.Println(formattedResult)
+		}
+
+		// Count Total Characters
+		if argsGiven[0] == "-m" {
+			totalCharCount := countChars(filePathGiven)
+
+			formattedResult := fmt.Sprintf("  %d %s", totalCharCount, filePathGiven)
 
 			fmt.Println(formattedResult)
 		}
@@ -56,4 +75,24 @@ func countLines(filePath string) int {
 	}
 
 	return lineCount
+}
+
+func countWords(filePath string) int {
+	fileContents := utils.ReadFile(filePath)
+
+	fileContentsToString := string(fileContents)
+
+	fileContentsSplitByWords := strings.Fields(fileContentsToString)
+
+	wordCount := len(fileContentsSplitByWords)
+
+	return wordCount
+}
+
+func countChars(filePath string) int {
+	fileContents := utils.ReadFile(filePath)
+
+	charCount := len(fileContents)
+
+	return charCount
 }
