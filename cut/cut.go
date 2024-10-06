@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-// Print short-hand
+// Print short-hand globals
 var ptLn = fmt.Println
 var ptF = fmt.Printf
 
@@ -23,6 +23,8 @@ func main() {
 
 		return
 	}
+
+	// Build variables required to print what the user requested
 
 	// Get the file path/name given as the final argument and check it exists
 	var filePath string
@@ -38,23 +40,44 @@ func main() {
 		return
 	}
 
-	// Just deal with -f flag for now
+	var fieldToPrint int
+	var delimiterToUse string
+
+	// The -f flag
+	// -f list 		The list specifies fields, separated in the input by the field delimiter character (see the -d option).  Output fields are separated by a single occurrence of the field delimiter character.
 	if strings.Contains(userArgsGiven[0], "-f") {
 		reNumsOnly := regexp.MustCompile("[0-9]+")
 		fNumsList := reNumsOnly.FindAllString(userArgsGiven[0], -1)
-		fieldToPrint, err := strconv.ParseInt(fNumsList[0], 10, 32)
+		fieldNum, err := strconv.ParseInt(fNumsList[0], 10, 32)
 
-		if err == nil {	
-			PrintBySpecifiedField(filePath, int(fieldToPrint))
+		if err != nil {	
+			ptLn("There was an error with the field number provided with the -f flag")
+			return
+		}
+
+		fieldToPrint = int(fieldNum)
+	}
+
+	// The -d flag
+	// -d delim 	Use delim as the field delimiter character instead of the tab character.
+	if strings.Contains(userArgsGiven[1], "-d") {
+		reDelimChar := regexp.MustCompile("^-d(.)$")
+		dDelimCharMatch := reDelimChar.FindStringSubmatch(userArgsGiven[1])
+
+		if len(dDelimCharMatch) > 1 {
+			delimiterToUse = dDelimCharMatch[1]
+		} else {
+			delimiterToUse = "\t"
 		}
 	}
-	
+
+	PrintBySpecifiedField(filePath, fieldToPrint, delimiterToUse)
 }
 
 func BuildNoArgsGivenMsg() string {
 	msgToReturn := "usage: "
 
-	msgToReturn += "	cut -f list"
+	msgToReturn += "	cut -f list [-d delim]"
 
 	return msgToReturn
 }
@@ -69,7 +92,7 @@ func CheckFileExists (filePath string) bool {
 	return false
 }
 
-func PrintBySpecifiedField(filePath string, fieldNum int) int {
+func PrintBySpecifiedField(filePath string, fieldNum int, delimiterChar string) int {
 	if fieldNum == 0 {
 		ptF("cut: values may not include zero")
 
@@ -91,11 +114,10 @@ func PrintBySpecifiedField(filePath string, fieldNum int) int {
     for scanner.Scan() {
         line := scanner.Text()
 
-		// Currently defaults to tabs
-        fields := strings.Split(line, "\t")
+        fields := strings.Split(line, delimiterChar)
 
         if fieldNum > len(fields) {
-            ptLn("")
+            ptLn(" ")
             continue
         }
 

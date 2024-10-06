@@ -33,7 +33,7 @@ func TestCheckFileExistsReturnsFalse(test *testing.T) {
 }
 
 func TestPrintSpecifiedFieldReturnsErrorWithFieldSetToZero(test *testing.T) {
-	result := PrintBySpecifiedField(correctTestFile, 0)
+	result := PrintBySpecifiedField(correctTestFile, 0, "\t")
 
 	if result != -1 {
 		test.Errorf("PrintBySpecifiedField(): Function should have returned a -1 code")
@@ -41,7 +41,7 @@ func TestPrintSpecifiedFieldReturnsErrorWithFieldSetToZero(test *testing.T) {
 }
 
 func TestPrintSpecifiedFieldReturnsErrorWithInvalidFile(test *testing.T) {
-	result := PrintBySpecifiedField(fakeTestFile, 2)
+	result := PrintBySpecifiedField(fakeTestFile, 2, "\t")
 
 	if result != -1 {
 		test.Errorf("PrintBySpecifiedField(): Function should have returned a -1 code")
