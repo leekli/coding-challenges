@@ -17,6 +17,7 @@ func main() {
 	// Retrieve any args given by the user not incl. file name
 	userArgsGiven := os.Args[1:]
 
+	// If no args given, display the usage help screen
 	if len(userArgsGiven) == 0 {
 		ptLn(BuildNoArgsGivenMsg())
 
@@ -30,7 +31,7 @@ func main() {
 		filePath = userArgsGiven[len(userArgsGiven) - 1]
 	}
 
-	fileExists := checkFileExists(filePath)
+	fileExists := CheckFileExists(filePath)
 
 	if !fileExists {
 		ptF("File '%v' does not exist.", filePath)
@@ -58,7 +59,7 @@ func BuildNoArgsGivenMsg() string {
 	return msgToReturn
 }
 
-func checkFileExists (filePath string) bool {
+func CheckFileExists (filePath string) bool {
 	if _, err := os.Stat(filePath); err == nil {
         return true
     } else if os.IsNotExist(err) {
@@ -68,12 +69,19 @@ func checkFileExists (filePath string) bool {
 	return false
 }
 
-func PrintBySpecifiedField(filePath string, fieldNum int) {
+func PrintBySpecifiedField(filePath string, fieldNum int) int {
+	if fieldNum == 0 {
+		ptF("cut: values may not include zero")
+
+        return -1
+	}
+
 	file, err := os.Open(filePath)
 
     if err != nil {
         ptF("Error opening file: %v\n", err)
-        return
+
+        return -1
     }
 
     defer file.Close()
@@ -87,7 +95,7 @@ func PrintBySpecifiedField(filePath string, fieldNum int) {
         fields := strings.Split(line, "\t")
 
         if fieldNum > len(fields) {
-            ptF("Line does not have %d fields: %s\n", fieldNum, line)
+            ptLn("")
             continue
         }
 
@@ -97,4 +105,6 @@ func PrintBySpecifiedField(filePath string, fieldNum int) {
     if err := scanner.Err(); err != nil {
         ptF("Error reading file: %v\n", err)
     }
+
+	return 0
 }
