@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"strings"
+	"unicode/utf8"
 	"wc/utils"
 )
 
@@ -42,32 +43,37 @@ func main() {
 		fileContents = utils.ReadFile(filePathGiven)
 	}
 
+	// If no flag has been provided, then return the total bytes, lines and words count to user
+	if (len(argsGiven) == 1 && isStdIn) || (len(argsGiven) == 2 && !isStdIn) {
+		formattedResult := CountWithNoFlags()
+
+		fmt.Println(formattedResult)
+	} else if len(argsGiven) >= 2 {
 	// Check which flag the user has provided and return the result
-	if len(argsGiven) >= 2 {
 		if argsGiven[1] == "-c" {
 			// Count Total Bytes
-			totalByteCount := countBytes(fileContents)
+			totalByteCount := CountBytes(fileContents)
 
 			formattedResult := fmt.Sprintf("   %d %s", totalByteCount, filePathGiven)
 
 			fmt.Println(formattedResult)
 		} else if argsGiven[1] == "-l" {
 			// Count Total Lines
-			totalLineCount := countLines(fileContents)
+			totalLineCount := CountLines(fileContents)
 
 			formattedResult := fmt.Sprintf("   %d %s", totalLineCount, filePathGiven)
 
 			fmt.Println(formattedResult)
 		} else if argsGiven[1] == "-w" {
 			// Count Total Words
-			totalWordCount := countWords(fileContents)
+			totalWordCount := CountWords(fileContents)
 
 			formattedResult := fmt.Sprintf("   %d %s", totalWordCount, filePathGiven)
 
 			fmt.Println(formattedResult)
 		} else if argsGiven[1] == "-m" {
 			// Count Total Characters
-			totalCharCount := countChars(fileContents)
+			totalCharCount := CountChars(fileContents)
 
 			formattedResult := fmt.Sprintf("    %d %s", totalCharCount, filePathGiven)
 
@@ -76,23 +82,16 @@ func main() {
 			fmt.Println("Invalid argument flag given.")
 		}
 	}
-	
-	// If no flag has been provided, then return the total bytes, lines and words count to user
-	if (len(argsGiven) == 1 && isStdIn) || (len(argsGiven) == 2 && !isStdIn) {
-		formattedResult := countWithNoFlags()
-
-		fmt.Println(formattedResult)
-	}
 
 }
 
-func countBytes(fileContents []byte) int {
+func CountBytes(fileContents []byte) int {
 	totalBytes := len(fileContents)
 
 	return totalBytes
 }
 
-func countLines(fileContents []byte) int {
+func CountLines(fileContents []byte) int {
 	lineCount := 0
 
 	for _, byte := range fileContents {
@@ -104,7 +103,7 @@ func countLines(fileContents []byte) int {
 	return lineCount
 }
 
-func countWords(fileContents []byte) int {
+func CountWords(fileContents []byte) int {
 	fileContentsToString := string(fileContents)
 
 	fileContentsSplitByWords := strings.Fields(fileContentsToString)
@@ -114,16 +113,14 @@ func countWords(fileContents []byte) int {
 	return wordCount
 }
 
-func countChars(fileContents []byte) int {
-	charCount := len(fileContents)
-
-	return charCount
+func CountChars(fileContents []byte) int {
+	return utf8.RuneCount(fileContents)
 }
 
-func countWithNoFlags() string {
-	totalByteCount := countBytes(fileContents)
-	totalLineCount := countLines(fileContents)
-	totalWordCount := countWords(fileContents)
+func CountWithNoFlags() string {
+	totalByteCount := CountBytes(fileContents)
+	totalLineCount := CountLines(fileContents)
+	totalWordCount := CountWords(fileContents)
 
 	totalCountString := fmt.Sprintf("    %d   %d   %d %s", totalLineCount, totalWordCount, totalByteCount, filePathGiven)
 
