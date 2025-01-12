@@ -13,7 +13,7 @@ Part of this Coding challenge: https://codingchallenges.fyi/challenges/challenge
 1. Clone the repo:
 
    ```terminal
-   $ git clone https://github.com/leekli/coding-challenges 
+   $ git clone https://github.com/leekli/coding-challenges
    ```
 
 2. Change directory:
@@ -24,7 +24,6 @@ Part of this Coding challenge: https://codingchallenges.fyi/challenges/challenge
 
 3. Ensure at least Go **1.22.5** is installed.
 
-
 4. Build the Go Binary:
 
    ```terminal
@@ -32,6 +31,9 @@ Part of this Coding challenge: https://codingchallenges.fyi/challenges/challenge
    ```
 
 5. A test file `test.txt` is supplied to use as an example.
+
+> [!NOTE]
+> There is a test suite available and can be ran using `go test -v`
 
 ## 💻 Commands & Options available
 

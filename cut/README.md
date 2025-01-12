@@ -34,3 +34,37 @@ Part of this Coding challenge: https://codingchallenges.fyi/challenges/challenge
 
 > [!NOTE]
 > There is a test suite available and can be ran using `go test -v`
+
+## 💻 Commands & Options available
+
+> [!NOTE]
+> All commands below can be used by giving a file name.
+
+> [!NOTE]
+> All output can be piped to the Standard Output (stdout).
+
+- **-f[n] [file_name]:** The list specifies fields, separated in the input by the field delimiter character (see the -d option). Output fields are separated by a single occurrence of the field delimiter character.
+
+  - With a file name:
+
+  ```terminal
+  $ ./cut -f2 test-data/sample.tsv
+  ```
+
+<br></br>
+
+- **-d [file_name]:** Use delim as the field delimiter character instead of the tab character.
+
+  - With a file name:
+
+  ```terminal
+  $ ./cut -f2 -d, test-data/fourchords.csv
+  ```
+
+  You can pipe the output to stdout as such:
+
+  ```terminal
+  $ ./cut -f2 -d, test-data/fourchords.csv | head -n5
+  ```
+
+<br></br>

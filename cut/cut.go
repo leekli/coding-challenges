@@ -9,24 +9,20 @@ import (
 	"strings"
 )
 
-// Print short-hand globals
-var ptLn = fmt.Println
-var ptF = fmt.Printf
-
 func main() {
-	// Retrieve any args given by the user not incl. file name
+	// Retrieve any args given by the user not incl. file name (which is arg 0)
 	userArgsGiven := os.Args[1:]
 
-	// If no args given, display the usage help screen
+	// If no args given, display the usage help screen & exit
 	if len(userArgsGiven) == 0 {
-		ptLn(BuildNoArgsGivenMsg())
+		cutMessage := CutHelpMessage()
+
+		fmt.Println(cutMessage)
 
 		return
 	}
 
-	// Build variables required to print what the user requested
-
-	// Get the file path/name given as the final argument and check it exists
+	// Get the file path/name given as the final argument and check it exists, exit if not
 	var filePath string
 
 	if len(userArgsGiven) > 1 {
@@ -36,7 +32,8 @@ func main() {
 	fileExists := CheckFileExists(filePath)
 
 	if !fileExists {
-		ptF("File '%v' does not exist.", filePath)
+		fmt.Printf("cut: '%v': No such file or directory", filePath)
+
 		return
 	}
 
@@ -51,7 +48,8 @@ func main() {
 		fieldNum, err := strconv.ParseInt(fNumsList[0], 10, 32)
 
 		if err != nil {	
-			ptLn("There was an error with the field number provided with the -f flag")
+			fmt.Println("There was an error with the field number provided with the -f flag")
+
 			return
 		}
 
@@ -71,15 +69,23 @@ func main() {
 		}
 	}
 
-	PrintBySpecifiedField(filePath, fieldToPrint, delimiterToUse)
+	returnCode, returnMessage := PrintBySpecifiedField(filePath, fieldToPrint, delimiterToUse)
+
+	if returnCode < 0 {
+		fmt.Println(returnMessage)
+	}
+
+	fmt.Println(returnMessage)
 }
 
-func BuildNoArgsGivenMsg() string {
-	msgToReturn := "usage: "
+func CutHelpMessage() string {
+	var cutMessage string;
 
-	msgToReturn += "	cut -f list [-d delim]"
+	cutMessage += "usage: "
 
-	return msgToReturn
+	cutMessage += "	cut -f list [-d delim]"
+
+	return cutMessage
 }
 
 func CheckFileExists (filePath string) bool {
@@ -92,23 +98,27 @@ func CheckFileExists (filePath string) bool {
 	return false
 }
 
-func PrintBySpecifiedField(filePath string, fieldNum int, delimiterChar string) int {
-	if fieldNum == 0 {
-		ptF("cut: values may not include zero")
+func PrintBySpecifiedField(filePath string, fieldNum int, delimiterChar string) (int, string) {
+	// Set default delimiter of tab-spaced if still empty
+	if delimiterChar == "" {
+		delimiterChar = "\t"
+	}
 
-        return -1
+	if fieldNum == 0 {
+		return -1, "cut: values may not include zero\n"
 	}
 
 	file, err := os.Open(filePath)
 
     if err != nil {
-        ptF("Error opening file: %v\n", err)
-
-        return -1
+		errMsg := fmt.Sprintf("cut: %v: Error opening file", err)
+		
+        return -1, errMsg
     }
 
-    defer file.Close()
+	var textToReturn string
 
+    defer file.Close()
 	scanner := bufio.NewScanner(file)
 
     for scanner.Scan() {
@@ -117,16 +127,22 @@ func PrintBySpecifiedField(filePath string, fieldNum int, delimiterChar string) 
         fields := strings.Split(line, delimiterChar)
 
         if fieldNum > len(fields) {
-            ptLn(" ")
+			textToReturn += fmt.Sprintln(" ")
+
             continue
         }
 
-        fmt.Println(fields[fieldNum - 1])
+		line = fmt.Sprintln(fields[fieldNum - 1])
+        textToReturn += line
     }
 
     if err := scanner.Err(); err != nil {
-        ptF("Error reading file: %v\n", err)
+		errMsg := fmt.Sprintf("cut: %v: Error opening file", err)
+		
+        return -1, errMsg
     }
 
-	return 0
+	finalString := strings.Trim(textToReturn, "\n")
+
+	return 0, finalString
 }
