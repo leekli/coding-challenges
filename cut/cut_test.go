@@ -5,12 +5,44 @@ import (
 	"testing"
 )
 
+/*
+	Edge Cases for Delimiters:
+		Test with different delimiters (e.g., space, semicolon, pipe).
+		Test with lines that do not contain the delimiter.
+
+	Field Number Edge Cases:
+		Test with field numbers greater than the number of fields in the line.
+		Test with negative field numbers.
+
+	Empty and Special Character Lines:
+		Test with empty lines.
+		Test with lines containing only whitespace.
+		Test with lines containing special characters.
+
+	File Content Variations:
+		Test with files containing a mix of different line lengths.
+		Test with files containing multibyte characters (e.g., UTF-8 encoded files with non-ASCII characters).
+
+	Error Handling:
+		Test with files that cannot be opened due to permissions.
+		Test with invalid file paths that do not exist.
+
+	Integration Tests:
+		Test the entire program with various combinations of flags and inputs to ensure overall functionality.
+*/
+
 // Tab test file
 var correctTestFile string = "test-data/sample.tsv"
 var fakeTestFile string = "fake-folder/fake-file.tsv"
 
 // Comma test file
-var correctTestCommeFile string = "test-data/fourchords.csv"
+var correctTestCommaFile string = "test-data/fourchords.csv"
+
+// Pipe test file
+//var correcTestPipeFile string = "test-data/sample.psv"
+
+// Space test file
+//var correcTestSpaceFile string = "test-data/sample.ssv"
 
 func TestCutHelpMessage_ReturnsFullCutHelpMessage(test *testing.T) {
 	result := CutHelpMessage()
@@ -32,7 +64,7 @@ func TestCheckFileExists_ReturnsTrueForValidFile(test *testing.T) {
 	}
 }
 
-func TestCheckFileExists_ReturnsFalseForValidFile(test *testing.T) {
+func TestCheckFileExists_ReturnsFalseForInvalidFile(test *testing.T) {
 	result := CheckFileExists(fakeTestFile)
 
 	if result != false {
@@ -40,7 +72,7 @@ func TestCheckFileExists_ReturnsFalseForValidFile(test *testing.T) {
 	}
 }
 
-func TestPrintBySpecifiedField_ReturnsErrorIfFieldNumIsZero_WithDefaultDelimiter(test *testing.T) {
+func TestPrintBySpecifiedField_ReturnsErrorIfFieldNumIsZero_WithDefaultTabDelimiter(test *testing.T) {
 	filePath := correctTestFile
 	fieldNum := 0
 
@@ -68,7 +100,7 @@ func TestPrintBySpecifiedField_ReturnsErrorIfFieldNumIsZero_WithDefaultDelimiter
 	}
 }
 
-func TestPrintBySpecifiedField_ReturnsErrorIfFieldPathIsInvalid_WithDefaultDelimiter(test *testing.T) {
+func TestPrintBySpecifiedField_ReturnsErrorIfFieldPathIsInvalid_WithDefaultTabDelimiter(test *testing.T) {
 	filePath := fakeTestFile
 	fieldNum := 2
 
@@ -83,7 +115,7 @@ func TestPrintBySpecifiedField_ReturnsErrorIfFieldPathIsInvalid_WithDefaultDelim
 	}
 }
 
-func TestPrintBySpecifiedField_ReturnsCorrectCodeAndOutputForValidFile_WithDefaultDelimiter(test *testing.T) {
+func TestPrintBySpecifiedField_ReturnsCorrectCodeAndOutputForValidFile_WithDefaultTabDelimiter(test *testing.T) {
 	filePath := correctTestFile
 	fieldNum := 2
 
@@ -127,7 +159,7 @@ func TestPrintBySpecifiedField_ReturnsCorrectCodeAndOutputForValidFile_WithDefau
 }
 
 func TestPrintBySpecifiedField_ReturnsCorrectCodeAndOutputForValidFile_WithCommaDelimiter(test *testing.T) {
-	filePath := correctTestCommeFile
+	filePath := correctTestCommaFile
 	fieldNum := 1
 	delimiterChar := ","
 

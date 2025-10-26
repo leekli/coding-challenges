@@ -32,7 +32,7 @@ func main() {
 	fileExists := CheckFileExists(filePath)
 
 	if !fileExists {
-		fmt.Printf("cut: '%v': No such file or directory", filePath)
+		fmt.Printf("cut: %v: No such file or directory\n", filePath)
 
 		return
 	}
