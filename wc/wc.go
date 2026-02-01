@@ -50,35 +50,36 @@ func main() {
 		fmt.Println(formattedResult)
 	} else if len(argsGiven) >= 2 {
 	// Check which flag the user has provided and return the result
-		if argsGiven[1] == "-c" {
+		switch argsGiven[1] {
+		case "-c":
 			// Count Total Bytes
 			totalByteCount := CountBytes(fileContents)
 
 			formattedResult := fmt.Sprintf("   %d %s", totalByteCount, filePathGiven)
 
 			fmt.Println(formattedResult)
-		} else if argsGiven[1] == "-l" {
+		case "-l":
 			// Count Total Lines
 			totalLineCount := CountLines(fileContents)
 
 			formattedResult := fmt.Sprintf("   %d %s", totalLineCount, filePathGiven)
 
 			fmt.Println(formattedResult)
-		} else if argsGiven[1] == "-w" {
+		case "-w":
 			// Count Total Words
 			totalWordCount := CountWords(fileContents)
 
 			formattedResult := fmt.Sprintf("   %d %s", totalWordCount, filePathGiven)
 
 			fmt.Println(formattedResult)
-		} else if argsGiven[1] == "-m" {
+		case "-m":
 			// Count Total Characters
 			totalCharCount := CountChars(fileContents)
 
 			formattedResult := fmt.Sprintf("    %d %s", totalCharCount, filePathGiven)
 
 			fmt.Println(formattedResult)
-		} else {
+		default:
 			fmt.Println("Invalid argument flag given.")
 		}
 	}
@@ -114,7 +115,7 @@ func CountWords(fileContents []byte) int {
 }
 
 func CountChars(fileContents []byte) int {
-	return utf8.RuneCount(fileContents)
+	return utf8.RuneCountInString(string(fileContents))
 }
 
 func CountWithNoFlags() string {
