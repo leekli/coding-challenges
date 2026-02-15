@@ -6,95 +6,374 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestTokenTypesConst_ChecksExistenceOfTokenTypes(test *testing.T) {
-	assert.Equal(test, TokenType(0), TokenLeftBrace)
-	assert.Equal(test, TokenType(1), TokenRightBrace)
-	assert.Equal(test, TokenType(2), TokenLeftBracket)
-	assert.Equal(test, TokenType(3), TokenRightBracket)
-	assert.Equal(test, TokenType(4), TokenColon)
-	assert.Equal(test, TokenType(5), TokenComma)
-	assert.Equal(test, TokenType(6), TokenString)
-	assert.Equal(test, TokenType(7), TokenNumber)
-	assert.Equal(test, TokenType(8), TokenBoolean)
-	assert.Equal(test, TokenType(9), TokenNull)
+// Lexer function tests
+func TestLexer_ReturnsEmptyTokenList_ForEmptySpace(test *testing.T) {
+	testJson := ""
+
+	output := Lexer(testJson)
+
+	assert.Equal(test, len(output), 0)
 }
 
-func TestNewTokenConstructor_ReturnsEachTokenType(test *testing.T) {
-	var leftBraceToken = NewToken(TokenLeftBrace, "}", 1)
+func TestLexer_ReturnsEmptyTokenList_ForSingleWhitespace(test *testing.T) {
+	testJson := " "
 
-	assert.Equal(test, leftBraceToken.Type, TokenLeftBrace)
-	assert.Equal(test, leftBraceToken.Value, "}")
-	assert.Equal(test, leftBraceToken.Length, 1)
+	output := Lexer(testJson)
 
-	var rightBraceToken = NewToken(TokenRightBrace, "{", 1)
+	assert.Equal(test, len(output), 0)
+}
 
-	assert.Equal(test, rightBraceToken.Type, TokenRightBrace)
-	assert.Equal(test, rightBraceToken.Value, "{")
-	assert.Equal(test, rightBraceToken.Length, 1)
-	
-	var leftBracketToken = NewToken(TokenLeftBracket, "[", 1)
+func TestLexer_ReturnsEmptyTokenList_ForMultipleWhitespace(test *testing.T) {
+	testJson := "    "
 
-	assert.Equal(test, leftBracketToken.Type, TokenLeftBracket)
-	assert.Equal(test, leftBracketToken.Value, "[")
-	assert.Equal(test, leftBracketToken.Length, 1)
+	output := Lexer(testJson)
 
-	var rightBracketToken = NewToken(TokenRightBracket, "]", 1)
+	assert.Equal(test, len(output), 0)
 
-	assert.Equal(test, rightBracketToken.Type, TokenRightBracket)
-	assert.Equal(test, rightBracketToken.Value, "]")
-	assert.Equal(test, rightBracketToken.Length, 1)
+	testJson = "                        "
 
-	var colonToken = NewToken(TokenColon, ":", 1)
+	output = Lexer(testJson)
 
-	assert.Equal(test, colonToken.Type, TokenColon)
-	assert.Equal(test, colonToken.Value, ":")
-	assert.Equal(test, colonToken.Length, 1)
+	assert.Equal(test, len(output), 0)
+}
 
-	var commaToken = NewToken(TokenComma, ",", 1)
+func TestLexer_ReturnsTokenList_ForSingleLeftBrace(test *testing.T) {
+	testJson := "{"
 
-	assert.Equal(test, commaToken.Type, TokenComma)
-	assert.Equal(test, commaToken.Value, ",")
-	assert.Equal(test, commaToken.Length, 1)
+	output := Lexer(testJson)
 
-	var stringToken = NewToken(TokenString, "\"Hello\"", 7)
+	assert.Equal(test, len(output), 1)
+	assert.Equal(test, output[0].Type, TokenLeftBrace)
+	assert.Equal(test, output[0].Value, "{")
+	assert.Equal(test, output[0].Length, 1)
+}
 
-	assert.Equal(test, stringToken.Type, TokenString)
-	assert.Equal(test, stringToken.Value, "\"Hello\"")
-	assert.Equal(test, stringToken.Length, 7)
+func TestLexer_ReturnsTokenList_ForSingleRightBrace(test *testing.T) {
+	testJson := "}"
 
-	var wholeNumberToken = NewToken(TokenNumber, "123", 3)
+	output := Lexer(testJson)
 
-	assert.Equal(test, wholeNumberToken.Type, TokenNumber)
-	assert.Equal(test, wholeNumberToken.Value, "123")
-	assert.Equal(test, wholeNumberToken.Length, 3)
+	assert.Equal(test, len(output), 1)
+	assert.Equal(test, output[0].Type, TokenRightBrace)
+	assert.Equal(test, output[0].Value, "}")
+	assert.Equal(test, output[0].Length, 1)
+}
 
-	var fracNumberToken = NewToken(TokenNumber, "1.23", 4)
+func TestLexer_ReturnsTokenList_ForSingleLeftBracket(test *testing.T) {
+	testJson := "["
 
-	assert.Equal(test, fracNumberToken.Type, TokenNumber)
-	assert.Equal(test, fracNumberToken.Value, "1.23")
-	assert.Equal(test, fracNumberToken.Length, 4)
+	output := Lexer(testJson)
 
-	var expNumberToken = NewToken(TokenNumber, "1e23", 4)
+	assert.Equal(test, len(output), 1)
+	assert.Equal(test, output[0].Type, TokenLeftBracket)
+	assert.Equal(test, output[0].Value, "[")
+	assert.Equal(test, output[0].Length, 1)
+}
 
-	assert.Equal(test, expNumberToken.Type, TokenNumber)
-	assert.Equal(test, expNumberToken.Value, "1e23")
-	assert.Equal(test, expNumberToken.Length, 4)
+func TestLexer_ReturnsTokenList_ForSingleRightBracket(test *testing.T) {
+	testJson := "]"
 
-	var trueBooleanToken = NewToken(TokenBoolean, "true", 4)
+	output := Lexer(testJson)
 
-	assert.Equal(test, trueBooleanToken.Type, TokenBoolean)
-	assert.Equal(test, trueBooleanToken.Value, "true")
-	assert.Equal(test, trueBooleanToken.Length, 4)
+	assert.Equal(test, len(output), 1)
+	assert.Equal(test, output[0].Type, TokenRightBracket)
+	assert.Equal(test, output[0].Value, "]")
+	assert.Equal(test, output[0].Length, 1)
+}
 
-	var falseBooleanToken = NewToken(TokenBoolean, "false", 5)
+func TestLexer_ReturnsTokenList_ForSingleColon(test *testing.T) {
+	testJson := ":"
 
-	assert.Equal(test, falseBooleanToken.Type, TokenBoolean)
-	assert.Equal(test, falseBooleanToken.Value, "false")
-	assert.Equal(test, falseBooleanToken.Length, 5)
+	output := Lexer(testJson)
 
-	var nullToken = NewToken(TokenNull, "null", 4)
+	assert.Equal(test, len(output), 1)
+	assert.Equal(test, output[0].Type, TokenColon)
+	assert.Equal(test, output[0].Value, ":")
+	assert.Equal(test, output[0].Length, 1)
+}
 
-	assert.Equal(test, nullToken.Type, TokenNull)
-	assert.Equal(test, nullToken.Value, "null")
-	assert.Equal(test, nullToken.Length, 4)
+func TestLexer_ReturnsTokenList_ForSingleComma(test *testing.T) {
+	testJson := ","
+
+	output := Lexer(testJson)
+
+	assert.Equal(test, len(output), 1)
+	assert.Equal(test, output[0].Type, TokenComma)
+	assert.Equal(test, output[0].Value, ",")
+	assert.Equal(test, output[0].Length, 1)
+}
+
+func TestLexer_ReturnsTokenList_ForTrueBoolean(test *testing.T) {
+	testJson := "true"
+
+	output := Lexer(testJson)
+
+	assert.Equal(test, len(output), 1)
+	assert.Equal(test, output[0].Type, TokenBoolean)
+	assert.Equal(test, output[0].Value, "true")
+	assert.Equal(test, output[0].Length, 4)
+}
+
+func TestLexer_ReturnsTokenList_ForFalseBoolean(test *testing.T) {
+	testJson := "false"
+
+	output := Lexer(testJson)
+
+	assert.Equal(test, len(output), 1)
+	assert.Equal(test, output[0].Type, TokenBoolean)
+	assert.Equal(test, output[0].Value, "false")
+	assert.Equal(test, output[0].Length, 5)
+}
+
+func TestLexer_ReturnsTokenList_ForNull(test *testing.T) {
+	testJson := "null"
+
+	output := Lexer(testJson)
+
+	assert.Equal(test, len(output), 1)
+	assert.Equal(test, output[0].Type, TokenNull)
+	assert.Equal(test, output[0].Value, "null")
+	assert.Equal(test, output[0].Length, 4)
+}
+
+func TestLexer_ReturnsTokenList_ForOpenAndClosedBrackets(test *testing.T) {
+	testJson := "[]"
+
+	output := Lexer(testJson)
+
+	assert.Equal(test, len(output), 2)
+	assert.Equal(test, output[0].Type, TokenLeftBracket)
+	assert.Equal(test, output[0].Value, "[")
+	assert.Equal(test, output[1].Type, TokenRightBracket)
+	assert.Equal(test, output[1].Value, "]")
+}
+
+func TestLexer_ReturnsTokenList_ForOpenAndClosedBraces(test *testing.T) {
+	testJson := "{}"
+
+	output := Lexer(testJson)
+
+	assert.Equal(test, len(output), 2)
+	assert.Equal(test, output[0].Type, TokenLeftBrace)
+	assert.Equal(test, output[0].Value, "{")
+	assert.Equal(test, output[1].Type, TokenRightBrace)
+	assert.Equal(test, output[1].Value, "}")
+}
+
+func TestLexer_ReturnsTokenList_ForString(test *testing.T) {
+	testJson := `""`
+
+	output := Lexer(testJson)
+
+	assert.Equal(test, len(output), 1)
+	assert.Equal(test, output[0].Type, TokenString)
+	assert.Equal(test, output[0].Value, `""`)
+	assert.Equal(test, output[0].Length, 2)
+
+	testJson = `"a"`
+
+	output = Lexer(testJson)
+
+	assert.Equal(test, len(output), 1)
+	assert.Equal(test, output[0].Type, TokenString)
+	assert.Equal(test, output[0].Value, `"a"`)
+	assert.Equal(test, output[0].Length, 3)
+
+	testJson = `"abcdef"`
+
+	output = Lexer(testJson)
+
+	assert.Equal(test, len(output), 1)
+	assert.Equal(test, output[0].Type, TokenString)
+	assert.Equal(test, output[0].Value, `"abcdef"`)
+	assert.Equal(test, output[0].Length, 8)
+
+	testJson = `"123"`
+
+	output = Lexer(testJson)
+
+	assert.Equal(test, len(output), 1)
+	assert.Equal(test, output[0].Type, TokenString)
+	assert.Equal(test, output[0].Value, `"123"`)
+	assert.Equal(test, output[0].Length, 5)
+}
+
+func TestLexer_ReturnsTokenList_ForPositiveNumber(test *testing.T) {
+	testJson := "0"
+
+	output := Lexer(testJson)
+
+	assert.Equal(test, len(output), 1)
+	assert.Equal(test, output[0].Type, TokenNumber)
+	assert.Equal(test, output[0].Value, "0")
+
+	testJson = "1"
+
+	output = Lexer(testJson)
+
+	assert.Equal(test, len(output), 1)
+	assert.Equal(test, output[0].Type, TokenNumber)
+	assert.Equal(test, output[0].Value, "1")
+
+	testJson = "12"
+
+	output = Lexer(testJson)
+
+	assert.Equal(test, len(output), 1)
+	assert.Equal(test, output[0].Type, TokenNumber)
+	assert.Equal(test, output[0].Value, "12")
+
+	testJson = "1234567890"
+
+	output = Lexer(testJson)
+
+	assert.Equal(test, len(output), 1)
+	assert.Equal(test, output[0].Type, TokenNumber)
+	assert.Equal(test, output[0].Value, "1234567890")
+}
+
+func TestLexer_ReturnsTokenList_ForNegativeNumber(test *testing.T) {
+	testJson := "-1"
+
+	output := Lexer(testJson)
+
+	assert.Equal(test, len(output), 1)
+	assert.Equal(test, output[0].Type, TokenNumber)
+	assert.Equal(test, output[0].Value, "-1")
+
+	testJson = "-12"
+
+	output = Lexer(testJson)
+
+	assert.Equal(test, len(output), 1)
+	assert.Equal(test, output[0].Type, TokenNumber)
+	assert.Equal(test, output[0].Value, "-12")
+
+	testJson = "-1234567890"
+
+	output = Lexer(testJson)
+
+	assert.Equal(test, len(output), 1)
+	assert.Equal(test, output[0].Type, TokenNumber)
+	assert.Equal(test, output[0].Value, "-1234567890")
+}
+
+func TestLexer_ReturnsTokenList_ForBracketsWithValueInside(test *testing.T) {
+	testJson := "[true]"
+
+	output := Lexer(testJson)
+
+	assert.Equal(test, len(output), 3)
+	assert.Equal(test, output[0].Type, TokenLeftBracket)
+	assert.Equal(test, output[0].Value, "[")
+	assert.Equal(test, output[1].Type, TokenBoolean)
+	assert.Equal(test, output[1].Value, "true")
+	assert.Equal(test, output[2].Type, TokenRightBracket)
+	assert.Equal(test, output[2].Value, "]")
+
+	testJson = "[false]"
+
+	output = Lexer(testJson)
+
+	assert.Equal(test, len(output), 3)
+	assert.Equal(test, output[0].Type, TokenLeftBracket)
+	assert.Equal(test, output[0].Value, "[")
+	assert.Equal(test, output[1].Type, TokenBoolean)
+	assert.Equal(test, output[1].Value, "false")
+	assert.Equal(test, output[2].Type, TokenRightBracket)
+	assert.Equal(test, output[2].Value, "]")
+
+	testJson = "[null]"
+
+	output = Lexer(testJson)
+
+	assert.Equal(test, len(output), 3)
+	assert.Equal(test, output[0].Type, TokenLeftBracket)
+	assert.Equal(test, output[0].Value, "[")
+	assert.Equal(test, output[1].Type, TokenNull)
+	assert.Equal(test, output[1].Value, "null")
+	assert.Equal(test, output[2].Type, TokenRightBracket)
+	assert.Equal(test, output[2].Value, "]")
+
+	testJson = "[\"hello\"]"
+
+	output = Lexer(testJson)
+
+	assert.Equal(test, len(output), 3)
+	assert.Equal(test, output[0].Type, TokenLeftBracket)
+	assert.Equal(test, output[0].Value, "[")
+	assert.Equal(test, output[1].Type, TokenString)
+	assert.Equal(test, output[1].Value, `"hello"`)
+	assert.Equal(test, output[2].Type, TokenRightBracket)
+	assert.Equal(test, output[2].Value, "]")
+
+	testJson = "[1]"
+
+	output = Lexer(testJson)
+
+	assert.Equal(test, len(output), 3)
+	assert.Equal(test, output[0].Type, TokenLeftBracket)
+	assert.Equal(test, output[0].Value, "[")
+	assert.Equal(test, output[1].Type, TokenNumber)
+	assert.Equal(test, output[1].Value, "1")
+	assert.Equal(test, output[2].Type, TokenRightBracket)
+	assert.Equal(test, output[2].Value, "]")
+}
+
+func TestLexer_ReturnsTokenList_ForBracketsWithMultipleValuesInside(test *testing.T) {
+	testJson := "[true, false]"
+
+	output := Lexer(testJson)
+
+	assert.Equal(test, len(output), 5)
+	assert.Equal(test, output[0].Type, TokenLeftBracket)
+	assert.Equal(test, output[0].Value, "[")
+	assert.Equal(test, output[1].Type, TokenBoolean)
+	assert.Equal(test, output[1].Value, "true")
+	assert.Equal(test, output[2].Type, TokenComma)
+	assert.Equal(test, output[2].Value, ",")
+	assert.Equal(test, output[3].Type, TokenBoolean)
+	assert.Equal(test, output[3].Value, "false")
+	assert.Equal(test, output[4].Type, TokenRightBracket)
+	assert.Equal(test, output[4].Value, "]")
+
+	testJson = "[false, null, true]"
+
+	output = Lexer(testJson)
+
+	assert.Equal(test, len(output), 7)
+	assert.Equal(test, output[0].Type, TokenLeftBracket)
+	assert.Equal(test, output[0].Value, "[")
+	assert.Equal(test, output[1].Type, TokenBoolean)
+	assert.Equal(test, output[1].Value, "false")
+	assert.Equal(test, output[2].Type, TokenComma)
+	assert.Equal(test, output[2].Value, ",")
+	assert.Equal(test, output[3].Type, TokenNull)
+	assert.Equal(test, output[3].Value, "null")
+	assert.Equal(test, output[4].Type, TokenComma)
+	assert.Equal(test, output[4].Value, ",")
+	assert.Equal(test, output[5].Type, TokenBoolean)
+	assert.Equal(test, output[5].Value, "true")
+	assert.Equal(test, output[6].Type, TokenRightBracket)
+	assert.Equal(test, output[6].Value, "]")
+
+	testJson = "[1, 2, 999]"
+
+	output = Lexer(testJson)
+
+	assert.Equal(test, len(output), 7)
+	assert.Equal(test, output[0].Type, TokenLeftBracket)
+	assert.Equal(test, output[0].Value, "[")
+	assert.Equal(test, output[1].Type, TokenNumber)
+	assert.Equal(test, output[1].Value, "1")
+	assert.Equal(test, output[2].Type, TokenComma)
+	assert.Equal(test, output[2].Value, ",")
+	assert.Equal(test, output[3].Type, TokenNumber)
+	assert.Equal(test, output[3].Value, "2")
+	assert.Equal(test, output[4].Type, TokenComma)
+	assert.Equal(test, output[4].Value, ",")
+	assert.Equal(test, output[5].Type, TokenNumber)
+	assert.Equal(test, output[5].Value, "999")
+	assert.Equal(test, output[6].Type, TokenRightBracket)
+	assert.Equal(test, output[6].Value, "]")
 }
