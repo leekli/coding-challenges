@@ -107,3 +107,58 @@ func TestExtractString_ReturnsString_MultipleCharString(test *testing.T) {
 	assert.Equal(test, `"a b c"`, output)
 	assert.Equal(test, 7, len(output))
 }
+
+// Extract number function tests
+func TestExtractNumberReturnsString_SinglePositiveNum(test *testing.T) {
+	testStr := "1"
+	testPointer := 0
+
+	output := ExtractNumber(testStr, testPointer)
+
+	assert.Equal(test, "1", output)
+	assert.Equal(test, 1, len(output))
+
+	testStr = "9"
+	testPointer = 0
+
+	output = ExtractNumber(testStr, testPointer)
+
+	assert.Equal(test, "9", output)
+	assert.Equal(test, 1, len(output))
+}
+
+func TestExtractNumber_ReturnsString_MultiplePositiveNums(test *testing.T) {
+	testStr := "123"
+	testPointer := 0
+
+	output := ExtractNumber(testStr, testPointer)
+
+	assert.Equal(test, "123", output)
+	assert.Equal(test, 3, len(output))
+
+	testStr = "1234567"
+	testPointer = 0
+
+	output = ExtractNumber(testStr, testPointer)
+
+	assert.Equal(test, "1234567", output)
+	assert.Equal(test, 7, len(output))
+}
+
+func TestExtractNumber_ReturnsString_NegativeNumbers(test *testing.T) {
+	testStr := "-1"
+	testPointer := 0
+
+	output := ExtractNumber(testStr, testPointer)
+
+	assert.Equal(test, "-1", output)
+	assert.Equal(test, 2, len(output))
+
+	testStr = "-245"
+	testPointer = 0
+
+	output = ExtractNumber(testStr, testPointer)
+
+	assert.Equal(test, "-245", output)
+	assert.Equal(test, 4, len(output))
+}
