@@ -1,8 +1,10 @@
 package lexer
 
 import (
+	"fmt"
 	"strings"
 	"unicode"
+	"unicode/utf8"
 )
 
 // Lexer JSON tokens types
@@ -110,7 +112,7 @@ func Lexer(jsonInput string) []Token {
 			stringPointer += len
 		// String values
 		case `"`:
-			stringValue := ExtractString(jsonInput, stringPointer)
+			stringValue, _ := ExtractString(jsonInput, stringPointer)
 			stringLen := len(stringValue)
 
 			token := NewToken(TokenString, stringValue, stringLen)
@@ -119,7 +121,7 @@ func Lexer(jsonInput string) []Token {
 			stringPointer += stringLen
 		// Negative number value
 		case "-":
-			numValue := ExtractNumber(jsonInput, stringPointer)
+			numValue, _ := ExtractNumber(jsonInput, stringPointer)
 			numLen := len(numValue)
 
 			token := NewToken(TokenNumber, numValue, numLen)
@@ -130,7 +132,7 @@ func Lexer(jsonInput string) []Token {
 
 		// Positive number value
 		if charIsDigit {
-			numValue := ExtractNumber(jsonInput, stringPointer)
+			numValue, _ := ExtractNumber(jsonInput, stringPointer)
 			numLen := len(numValue)
 
 			token := NewToken(TokenNumber, numValue, numLen)
@@ -153,31 +155,97 @@ func Peek(jsonInput string, stringPointer int) string {
     return string(char)
 }
 
-func ExtractString(jsonInput string, stringPointer int) string {
-	// NO LOGIC RIGHT NOW FOR ESCAPE CHARS etc YET!
-	// FRAGILE IF NO END " IS FOUND
-	
+func isHexDigit(b byte) bool {
+	return (b >= '0' && b <= '9') || (b >= 'a' && b <= 'f') || (b >= 'A' && b <= 'F')
+}
+
+func ExtractString(jsonInput string, stringPointer int) (string, error) {
+	if Peek(jsonInput, stringPointer) != `"` {
+		return "", fmt.Errorf("String must start with \"")
+	}
+
 	var foundString strings.Builder
 
-	// First char is " as identified by lexer (move pointer forward by 1)
-	foundString.WriteString(`"`)
+	// Add opening quote
+	foundString.WriteByte('"')
 	stringPointer++
 
-	// Loop through each subsequent char and keep adding to found string until a " end string quote is found
-	for Peek(jsonInput, stringPointer) != `"` {
-		nextChar := Peek(jsonInput, stringPointer)
+	for {
+		if stringPointer >= len(jsonInput) {
+			return "", fmt.Errorf("Unterminated string")
+		}
 
-		foundString.WriteString(nextChar)
+		// Read next byte/rune
+		b := jsonInput[stringPointer]
 
-		stringPointer++
+		// If next one is a ", then this is an empty string, add it as such
+		if b == '"' {
+			foundString.WriteByte('"')
+			stringPointer++
+			break
+		}
+
+		// Deal with various escape sequences
+		if b == '\\' {
+			// Need at least one more byte
+			if stringPointer+1 >= len(jsonInput) {
+				return "", fmt.Errorf("Invalid escape at end of input")
+			}
+
+			next := jsonInput[stringPointer + 1]
+
+			switch next {
+			case '"', '\\', '/', 'b', 'f', 'n', 'r', 't':
+				// Preserve original escape sequence in token value
+				foundString.WriteByte('\\')
+				foundString.WriteByte(next)
+				stringPointer += 2
+
+				continue
+			case 'u':
+				// Expect exactly four hex digits after \u
+				if stringPointer + 6 > len(jsonInput) {
+					return "", fmt.Errorf("Incomplete unicode escape")
+				}
+
+				hex := jsonInput[stringPointer + 2 : stringPointer + 6]
+
+				for i := 0; i < 4; i++ {
+					if !isHexDigit(hex[i]) {
+						return "", fmt.Errorf("Invalid unicode escape")
+					}
+				}
+
+				// Append \uXXXX
+				foundString.WriteString("\\u")
+				foundString.WriteString(hex)
+
+				// Move string pointer past \uXXXX
+				stringPointer += 6
+
+				continue
+			default:
+				return "", fmt.Errorf("Invalid escape sequence: \\%c", next)
+			}
+		}
+
+		// Unescaped characters: must not be control characters (U+0000 through U+001F)
+		r, size := utf8.DecodeRuneInString(jsonInput[stringPointer:])
+		if r == utf8.RuneError && size == 1 {
+			// Invalid UTF-8 byte sequence
+			return "", fmt.Errorf("Invalid UTF-8 in string")
+		}
+		if r <= 0x1F {
+			return "", fmt.Errorf("Unescaped control character in string")
+		}
+
+		// Append the raw bytes for this 
+		foundString.WriteString(jsonInput[stringPointer : stringPointer + size])
+
+		stringPointer += size
 	}
 
-	// Add end string quote
-	if string(jsonInput[stringPointer]) == `"` {
-		foundString.WriteString(`"`)
-	}
-
-	return foundString.String()
+	return foundString.String(), nil
 }
 
 func isDigit(jsonInput string, stringPointer int) bool {
@@ -194,32 +262,78 @@ func isDigit(jsonInput string, stringPointer int) bool {
 	return false
 }
 
-func ExtractNumber(jsonInput string, stringPointer int) string {
-	// Need to extend to include: decimals, 0.x's, exponents
-	// To add tests
-
+func ExtractNumber(jsonInput string, stringPointer int) (string, error) {
 	var foundNumber strings.Builder
 
 	// Deal with optional single negative sign
-	if jsonInput[stringPointer] == '-' {
+	if Peek(jsonInput, stringPointer) == "-" {
 		foundNumber.WriteString("-")
 
 		stringPointer++		
 	}
 
-	// Get the first digit, check validity
-	if isDigit(jsonInput, stringPointer) {
+	// Deal with integer part, no leading 0s unless the integer is 0 on its own or 0.x
+	if Peek(jsonInput, stringPointer) == "0" {
 		foundNumber.WriteString(string(jsonInput[stringPointer]))
 
-		stringPointer++
+		stringPointer++	
+
+		// Disallow leading zeros: if '0' is followed by another digit, it's invalid (e.g. "01")
+        if isDigit(jsonInput, stringPointer) {
+            return "", fmt.Errorf("Leading zeros are not allowed")
+        }
+	} else if isDigit(jsonInput, stringPointer) {
+		for isDigit(jsonInput, stringPointer) {
+			foundNumber.WriteString(string(jsonInput[stringPointer]))
+
+			stringPointer++
+		}
+	} else {
+		return "", fmt.Errorf("Number must start with a digit or minus sign")
 	}
 
-	// Cycle through the rest of the digits, checking validity
-	for isDigit(jsonInput, stringPointer) {
+	// Deal with fractional/decimal part
+	if Peek(jsonInput, stringPointer) == "." {
 		foundNumber.WriteString(string(jsonInput[stringPointer]))
 
-		stringPointer++
+		stringPointer++	
+		
+		// Must have at least one digit after decimal point
+		if !isDigit(jsonInput, stringPointer) {
+			return "", fmt.Errorf("A digit must follow a decimal point")
+		}
+
+		for isDigit(jsonInput, stringPointer) {
+			foundNumber.WriteString(string(jsonInput[stringPointer]))
+
+			stringPointer++		
+		}
 	}
 
-	return foundNumber.String()
+	// Deal with exponent part
+	if Peek(jsonInput, stringPointer) == "e" || Peek(jsonInput, stringPointer) == "E" {
+		foundNumber.WriteString(string(jsonInput[stringPointer]))
+
+		stringPointer++	
+		
+		// Handle optional - or + signs on exponent
+		if Peek(jsonInput, stringPointer) == "+" || Peek(jsonInput, stringPointer) == "-" {
+			foundNumber.WriteString(string(jsonInput[stringPointer]))
+
+			stringPointer++	
+		}
+
+		// Must have at least one digit in the exponent 
+		if !isDigit(jsonInput, stringPointer) {
+			return "", fmt.Errorf("Exponent must contain at least one digit")
+		}
+
+		for isDigit(jsonInput, stringPointer) {
+			foundNumber.WriteString(string(jsonInput[stringPointer]))
+
+			stringPointer++		
+		}
+	}
+
+	return foundNumber.String(), nil
 }
