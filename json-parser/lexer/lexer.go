@@ -2,6 +2,7 @@ package lexer
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -41,7 +42,7 @@ func Lexer(jsonInput string) []Token {
 
 	for !IsAtEnd(jsonInput, stringPointer) {
 		for stringPointer < len(jsonInput) {
-			currentChar := string(jsonInput[stringPointer])
+			currentChar := Peek(jsonInput, stringPointer)
 
 			charIsDigit := unicode.IsDigit(rune(jsonInput[stringPointer]))
 
@@ -118,7 +119,12 @@ func Lexer(jsonInput string) []Token {
 				stringPointer += len
 			// String values
 			case `"`:
-				stringValue, _ := ExtractString(jsonInput, stringPointer)
+				stringValue, err := ExtractString(jsonInput, stringPointer)
+
+				if err != nil {
+					log.Fatalf("❌ JSON Lexer: String extraction encountered an issue: %v", err)
+				}
+
 				stringLen := len(stringValue)
 
 				token := NewToken(TokenString, stringValue, stringLen)
@@ -127,7 +133,12 @@ func Lexer(jsonInput string) []Token {
 				stringPointer += stringLen
 			// Negative number value
 			case "-":
-				numValue, _ := ExtractNumber(jsonInput, stringPointer)
+				numValue, err := ExtractNumber(jsonInput, stringPointer)
+
+				if err != nil {
+					log.Fatalf("❌ JSON Lexer: Number extraction encountered an issue: %v", err)
+				}
+
 				numLen := len(numValue)
 
 				token := NewToken(TokenNumber, numValue, numLen)
@@ -193,13 +204,14 @@ func ExtractString(jsonInput string, stringPointer int) (string, error) {
 		if b == '"' {
 			foundString.WriteByte('"')
 			stringPointer++
+
 			break
 		}
 
 		// Deal with various escape sequences
 		if b == '\\' {
 			// Need at least one more byte
-			if stringPointer+1 >= len(jsonInput) {
+			if stringPointer + 1 >= len(jsonInput) {
 				return "", fmt.Errorf("Invalid escape at end of input")
 			}
 
@@ -242,6 +254,7 @@ func ExtractString(jsonInput string, stringPointer int) (string, error) {
 
 		// Unescaped characters: must not be control characters (U+0000 through U+001F)
 		r, size := utf8.DecodeRuneInString(jsonInput[stringPointer:])
+		
 		if r == utf8.RuneError && size == 1 {
 			// Invalid UTF-8 byte sequence
 			return "", fmt.Errorf("Invalid UTF-8 in string")
