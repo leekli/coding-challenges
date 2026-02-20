@@ -39,110 +39,116 @@ func Lexer(jsonInput string) []Token {
 	tokenList := []Token{}
 	stringPointer := 0
 
-	for stringPointer < len(jsonInput) {
-		currentChar := string(jsonInput[stringPointer])
+	for !IsAtEnd(jsonInput, stringPointer) {
+		for stringPointer < len(jsonInput) {
+			currentChar := string(jsonInput[stringPointer])
 
-		charIsDigit := unicode.IsDigit(rune(jsonInput[stringPointer]))
+			charIsDigit := unicode.IsDigit(rune(jsonInput[stringPointer]))
 
-		switch currentChar {
-		// Whitespace (Skip)
-		case " ":
-			stringPointer++
+			switch currentChar {
+			// Whitespace (Skip)
+			case " ":
+				stringPointer++
 
-			continue
-		// Open [left] brace
-		case "{":
-			token := NewToken(TokenLeftBrace, "{", len(currentChar))
-			tokenList = append(tokenList, token)
+				continue
+			// Open [left] brace
+			case "{":
+				token := NewToken(TokenLeftBrace, "{", len(currentChar))
+				tokenList = append(tokenList, token)
 
-			stringPointer++
-		// Closed [right] brace
-		case "}":
-			token := NewToken(TokenRightBrace, "}", len(currentChar))
-			tokenList = append(tokenList, token)
+				stringPointer++
+			// Closed [right] brace
+			case "}":
+				token := NewToken(TokenRightBrace, "}", len(currentChar))
+				tokenList = append(tokenList, token)
 
-			stringPointer++
-		// Open [left] bracket
-		case "[":
-			token := NewToken(TokenLeftBracket, "[", len(currentChar))
-			tokenList = append(tokenList, token)
+				stringPointer++
+			// Open [left] bracket
+			case "[":
+				token := NewToken(TokenLeftBracket, "[", len(currentChar))
+				tokenList = append(tokenList, token)
 
-			stringPointer++
-		// Closed [right] bracket
-		case "]":
-			token := NewToken(TokenRightBracket, "]", len(currentChar))
-			tokenList = append(tokenList, token)
+				stringPointer++
+			// Closed [right] bracket
+			case "]":
+				token := NewToken(TokenRightBracket, "]", len(currentChar))
+				tokenList = append(tokenList, token)
 
-			stringPointer++		
-		// Colon
-		case ":":
-			token := NewToken(TokenColon, ":", len(currentChar))
-			tokenList = append(tokenList, token)
+				stringPointer++		
+			// Colon
+			case ":":
+				token := NewToken(TokenColon, ":", len(currentChar))
+				tokenList = append(tokenList, token)
 
-			stringPointer++	
-		// Comma
-		case ",":
-			token := NewToken(TokenComma, ",", len(currentChar))
-			tokenList = append(tokenList, token)
+				stringPointer++	
+			// Comma
+			case ",":
+				token := NewToken(TokenComma, ",", len(currentChar))
+				tokenList = append(tokenList, token)
 
-			stringPointer++	
-		// true boolean			
-		case "t":
-			len := 4
+				stringPointer++	
+			// true boolean			
+			case "t":
+				len := 4
 
-			token := NewToken(TokenBoolean, "true", len)
-			tokenList = append(tokenList, token)		
-			
-			stringPointer += len
-		// false boolean
-		case "f":
-			len := 5
+				token := NewToken(TokenBoolean, "true", len)
+				tokenList = append(tokenList, token)		
+				
+				stringPointer += len
+			// false boolean
+			case "f":
+				len := 5
 
-			token := NewToken(TokenBoolean, "false", len)
-			tokenList = append(tokenList, token)		
-			
-			stringPointer += len
-		// null value
-		case "n":
-			len := 4
+				token := NewToken(TokenBoolean, "false", len)
+				tokenList = append(tokenList, token)		
+				
+				stringPointer += len
+			// null value
+			case "n":
+				len := 4
 
-			token := NewToken(TokenNull, "null", len)
-			tokenList = append(tokenList, token)		
-			
-			stringPointer += len
-		// String values
-		case `"`:
-			stringValue, _ := ExtractString(jsonInput, stringPointer)
-			stringLen := len(stringValue)
+				token := NewToken(TokenNull, "null", len)
+				tokenList = append(tokenList, token)		
+				
+				stringPointer += len
+			// String values
+			case `"`:
+				stringValue, _ := ExtractString(jsonInput, stringPointer)
+				stringLen := len(stringValue)
 
-			token := NewToken(TokenString, stringValue, stringLen)
-			tokenList = append(tokenList, token)		
-			
-			stringPointer += stringLen
-		// Negative number value
-		case "-":
-			numValue, _ := ExtractNumber(jsonInput, stringPointer)
-			numLen := len(numValue)
+				token := NewToken(TokenString, stringValue, stringLen)
+				tokenList = append(tokenList, token)		
+				
+				stringPointer += stringLen
+			// Negative number value
+			case "-":
+				numValue, _ := ExtractNumber(jsonInput, stringPointer)
+				numLen := len(numValue)
 
-			token := NewToken(TokenNumber, numValue, numLen)
-			tokenList = append(tokenList, token)		
-			
-			stringPointer += numLen
-		}
+				token := NewToken(TokenNumber, numValue, numLen)
+				tokenList = append(tokenList, token)		
+				
+				stringPointer += numLen
+			}
 
-		// Positive number value
-		if charIsDigit {
-			numValue, _ := ExtractNumber(jsonInput, stringPointer)
-			numLen := len(numValue)
+			// Positive number value
+			if charIsDigit {
+				numValue, _ := ExtractNumber(jsonInput, stringPointer)
+				numLen := len(numValue)
 
-			token := NewToken(TokenNumber, numValue, numLen)
-			tokenList = append(tokenList, token)		
-			
-			stringPointer += numLen
-		}
+				token := NewToken(TokenNumber, numValue, numLen)
+				tokenList = append(tokenList, token)		
+				
+				stringPointer += numLen
+			}
+		}		
 	}
 
 	return tokenList
+}
+
+func IsAtEnd(jsonInput string, stringPointer int) bool {
+	return stringPointer >= len(jsonInput)
 }
 
 func Peek(jsonInput string, stringPointer int) string {
