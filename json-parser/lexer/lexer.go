@@ -112,8 +112,18 @@ func Lexer(jsonInput string) []Token {
 				tokenList = append(tokenList, token)		
 				
 				stringPointer += len
-			// New lines (Move pointer forward)
+			// New lines (Ignore - Move pointer forward)
 			case "\n":
+				len := 1	
+				
+				stringPointer += len
+			// Carrige returns (Ignore - Move pointer forward)
+			case "\r":
+				len := 1	
+				
+				stringPointer += len
+			// Tabs (Ignore - Move pointer forward)
+			case "\t":
 				len := 1	
 				
 				stringPointer += len
@@ -254,7 +264,7 @@ func ExtractString(jsonInput string, stringPointer int) (string, error) {
 
 		// Unescaped characters: must not be control characters (U+0000 through U+001F)
 		r, size := utf8.DecodeRuneInString(jsonInput[stringPointer:])
-		
+
 		if r == utf8.RuneError && size == 1 {
 			// Invalid UTF-8 byte sequence
 			return "", fmt.Errorf("Invalid UTF-8 in string")

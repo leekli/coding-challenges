@@ -672,3 +672,175 @@ func TestLexer_NewLine_TokenHandling(test *testing.T) {
 	assert.Equal(test, TokenNumber, output6[2].Type)
 	assert.Equal(test, "2", output6[2].Value)
 }
+
+func TestLexer_CarriageReturn_TokenHandling(test *testing.T) {
+	input := "\r"
+	output := Lexer(input)
+	assert.Equal(test, 0, len(output))
+
+	input2 := "1\r2"
+	output2 := Lexer(input2)
+	assert.Equal(test, 2, len(output2))
+	assert.Equal(test, TokenNumber, output2[0].Type)
+	assert.Equal(test, "1", output2[0].Value)
+	assert.Equal(test, TokenNumber, output2[1].Type)
+	assert.Equal(test, "2", output2[1].Value)
+
+	input3 := "[\r]"
+	output3 := Lexer(input3)
+	assert.Equal(test, 2, len(output3))
+	assert.Equal(test, TokenLeftBracket, output3[0].Type)
+	assert.Equal(test, TokenRightBracket, output3[1].Type)
+
+	input4 := "\r\r\r"
+	output4 := Lexer(input4)
+	assert.Equal(test, 0, len(output4))
+
+	input5 := "\rtrue\r"
+	output5 := Lexer(input5)
+	assert.Equal(test, 1, len(output5))
+	assert.Equal(test, TokenBoolean, output5[0].Type)
+	assert.Equal(test, "true", output5[0].Value)
+
+	input6 := "\r\r1,2\r\r"
+	output6 := Lexer(input6)
+	assert.Equal(test, 3, len(output6))
+	assert.Equal(test, TokenNumber, output6[0].Type)
+	assert.Equal(test, "1", output6[0].Value)
+	assert.Equal(test, TokenComma, output6[1].Type)
+	assert.Equal(test, TokenNumber, output6[2].Type)
+	assert.Equal(test, "2", output6[2].Value)
+}
+
+func TestLexer_Tab_TokenHandling(test *testing.T) {
+	input := "\t"
+	output := Lexer(input)
+	assert.Equal(test, 0, len(output))
+
+	input2 := "1\t2"
+	output2 := Lexer(input2)
+	assert.Equal(test, 2, len(output2))
+	assert.Equal(test, TokenNumber, output2[0].Type)
+	assert.Equal(test, "1", output2[0].Value)
+	assert.Equal(test, TokenNumber, output2[1].Type)
+	assert.Equal(test, "2", output2[1].Value)
+
+	input3 := "[\t]"
+	output3 := Lexer(input3)
+	assert.Equal(test, 2, len(output3))
+	assert.Equal(test, TokenLeftBracket, output3[0].Type)
+	assert.Equal(test, TokenRightBracket, output3[1].Type)
+
+	input4 := "\t\t\t"
+	output4 := Lexer(input4)
+	assert.Equal(test, 0, len(output4))
+
+	input5 := "\ttrue\t"
+	output5 := Lexer(input5)
+	assert.Equal(test, 1, len(output5))
+	assert.Equal(test, TokenBoolean, output5[0].Type)
+	assert.Equal(test, "true", output5[0].Value)
+
+	input6 := "\t\t1,2\t\t"
+	output6 := Lexer(input6)
+	assert.Equal(test, 3, len(output6))
+	assert.Equal(test, TokenNumber, output6[0].Type)
+	assert.Equal(test, "1", output6[0].Value)
+	assert.Equal(test, TokenComma, output6[1].Type)
+	assert.Equal(test, TokenNumber, output6[2].Type)
+	assert.Equal(test, "2", output6[2].Value)
+}
+
+func TestLexer_MixedWhitespace_TokenHandling(test *testing.T) {
+	input := " \t\r\n"
+	output := Lexer(input)
+	assert.Equal(test, 0, len(output))
+
+	input2 := "\t1 \r2\n3\t"
+	output2 := Lexer(input2)
+	assert.Equal(test, 3, len(output2))
+	assert.Equal(test, TokenNumber, output2[0].Type)
+	assert.Equal(test, "1", output2[0].Value)
+	assert.Equal(test, TokenNumber, output2[1].Type)
+	assert.Equal(test, "2", output2[1].Value)
+	assert.Equal(test, TokenNumber, output2[2].Type)
+	assert.Equal(test, "3", output2[2].Value)
+
+	input3 := "[\t\r\n]"
+	output3 := Lexer(input3)
+	assert.Equal(test, 2, len(output3))
+	assert.Equal(test, TokenLeftBracket, output3[0].Type)
+	assert.Equal(test, TokenRightBracket, output3[1].Type)
+}
+
+func TestLexer_NestedArraysAndObjects(test *testing.T) {
+	input := `[{"a": [1, 2, {"b": false}], "c": null}, 42]`
+	out := Lexer(input)
+	expectedTypes := []TokenType{
+		TokenLeftBracket, TokenLeftBrace, TokenString, TokenColon, TokenLeftBracket, TokenNumber, TokenComma, TokenNumber, TokenComma, TokenLeftBrace, TokenString, TokenColon, TokenBoolean, TokenRightBrace, TokenRightBracket, TokenComma, TokenString, TokenColon, TokenNull, TokenRightBrace, TokenComma, TokenNumber, TokenRightBracket,
+	}
+	assert.Equal(test, len(expectedTypes), len(out))
+	for i, tt := range expectedTypes {
+		assert.Equal(test, tt, out[i].Type)
+	}
+}
+
+func TestLexer_DeeplyNestedStructures(test *testing.T) {
+	input := `{"a": [{"b": [1, {"c": [2, {"d": [3]}]}]}]}`
+	out := Lexer(input)
+	expectedTypes := []TokenType{
+		TokenLeftBrace, TokenString, TokenColon, TokenLeftBracket, TokenLeftBrace, TokenString, TokenColon, TokenLeftBracket, TokenNumber, TokenComma, TokenLeftBrace, TokenString, TokenColon, TokenLeftBracket, TokenNumber, TokenComma, TokenLeftBrace, TokenString, TokenColon, TokenLeftBracket, TokenNumber, TokenRightBracket, TokenRightBrace, TokenRightBracket, TokenRightBrace, TokenRightBracket, TokenRightBrace, TokenRightBracket, TokenRightBrace,
+	}
+	assert.Equal(test, len(expectedTypes), len(out))
+	for i, tt := range expectedTypes {
+		assert.Equal(test, tt, out[i].Type)
+	}
+}
+
+func TestLexer_ComplexObjectWithAllTypes(test *testing.T) {
+	input := `{"str": "hello", "num": 123, "arr": [true, false, null, 1.5], "obj": {"k": "v"}, "bool": true, "nul": null}`
+	out := Lexer(input)
+	expectedTypes := []TokenType{
+		TokenLeftBrace, TokenString, TokenColon, TokenString, TokenComma, TokenString, TokenColon, TokenNumber, TokenComma, TokenString, TokenColon, TokenLeftBracket, TokenBoolean, TokenComma, TokenBoolean, TokenComma, TokenNull, TokenComma, TokenNumber, TokenRightBracket, TokenComma, TokenString, TokenColon, TokenLeftBrace, TokenString, TokenColon, TokenString, TokenRightBrace, TokenComma, TokenString, TokenColon, TokenBoolean, TokenComma, TokenString, TokenColon, TokenNull, TokenRightBrace,
+	}
+	assert.Equal(test, len(expectedTypes), len(out))
+	for i, tt := range expectedTypes {
+		assert.Equal(test, tt, out[i].Type)
+	}
+}
+
+func TestLexer_DeeplyNestedMixedTypes(test *testing.T) {
+	input := `[{"a": [1, {"b": [2, {"c": [3, {"d": [4, {"e": [5]}]}]}]}]}]`
+	out := Lexer(input)
+	numCount := 0
+	strCount := 0
+	for _, t := range out {
+		if t.Type == TokenNumber {
+			numCount++
+		}
+		if t.Type == TokenString {
+			strCount++
+		}
+	}
+	assert.Equal(test, 5, numCount)
+	assert.Equal(test, 5, strCount)
+	assert.Equal(test, TokenLeftBracket, out[0].Type)
+	assert.Equal(test, TokenLeftBrace, out[1].Type)
+	assert.Equal(test, TokenString, out[2].Type)
+	assert.Equal(test, TokenColon, out[3].Type)
+	assert.Equal(test, TokenLeftBracket, out[4].Type)
+	assert.Equal(test, TokenNumber, out[5].Type)
+	assert.Equal(test, "1", out[5].Value)
+}
+
+func TestLexer_ComplexArrayWithObjectsAndValues(test *testing.T) {
+	input := `[{"x": 1}, {"y": 2}, [3, 4, {"z": 5}], true, null, "str"]`
+	out := Lexer(input)
+	expectedTypes := []TokenType{
+		TokenLeftBracket, TokenLeftBrace, TokenString, TokenColon, TokenNumber, TokenRightBrace, TokenComma, TokenLeftBrace, TokenString, TokenColon, TokenNumber, TokenRightBrace, TokenComma, TokenLeftBracket, TokenNumber, TokenComma, TokenNumber, TokenComma, TokenLeftBrace, TokenString, TokenColon, TokenNumber, TokenRightBrace, TokenRightBracket, TokenComma, TokenBoolean, TokenComma, TokenNull, TokenComma, TokenString, TokenRightBracket,
+	}
+	assert.Equal(test, len(expectedTypes), len(out))
+	for i, tt := range expectedTypes {
+		assert.Equal(test, tt, out[i].Type)
+	}
+}
