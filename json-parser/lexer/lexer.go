@@ -111,6 +111,11 @@ func Lexer(jsonInput string) []Token {
 				tokenList = append(tokenList, token)		
 				
 				stringPointer += len
+			// New lines (Move pointer forward)
+			case "\n":
+				len := 1	
+				
+				stringPointer += len
 			// String values
 			case `"`:
 				stringValue, _ := ExtractString(jsonInput, stringPointer)

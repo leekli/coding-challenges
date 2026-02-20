@@ -623,3 +623,52 @@ func TestLexer_StringsWithEscapes_ViaLexer(test *testing.T) {
 	assert.Equal(test, `"\u0041"`, out2[3].Value)
 	assert.Equal(test, TokenRightBracket, out2[4].Type)
 }
+
+func TestIsAtEnd_HappyAndSadPaths(test *testing.T) {
+	assert.True(test, IsAtEnd("", 0))
+	assert.True(test, IsAtEnd("abc", 3))
+	assert.True(test, IsAtEnd("abc", 4))
+	assert.True(test, IsAtEnd("abc", 100))
+	assert.False(test, IsAtEnd("abc", 0))
+	assert.False(test, IsAtEnd("abc", 1))
+	assert.False(test, IsAtEnd("abc", 2))
+}
+
+func TestLexer_NewLine_TokenHandling(test *testing.T) {
+	input := "\n"
+	output := Lexer(input)
+	assert.Equal(test, 0, len(output))
+
+	input2 := "1\n2"
+	output2 := Lexer(input2)
+	assert.Equal(test, 2, len(output2))
+	assert.Equal(test, TokenNumber, output2[0].Type)
+	assert.Equal(test, "1", output2[0].Value)
+	assert.Equal(test, TokenNumber, output2[1].Type)
+	assert.Equal(test, "2", output2[1].Value)
+
+	input3 := "[\n]"
+	output3 := Lexer(input3)
+	assert.Equal(test, 2, len(output3))
+	assert.Equal(test, TokenLeftBracket, output3[0].Type)
+	assert.Equal(test, TokenRightBracket, output3[1].Type)
+
+	input4 := "\n\n\n"
+	output4 := Lexer(input4)
+	assert.Equal(test, 0, len(output4))
+
+	input5 := "\ntrue\n"
+	output5 := Lexer(input5)
+	assert.Equal(test, 1, len(output5))
+	assert.Equal(test, TokenBoolean, output5[0].Type)
+	assert.Equal(test, "true", output5[0].Value)
+
+	input6 := "\n\n1,2\n\n"
+	output6 := Lexer(input6)
+	assert.Equal(test, 3, len(output6))
+	assert.Equal(test, TokenNumber, output6[0].Type)
+	assert.Equal(test, "1", output6[0].Value)
+	assert.Equal(test, TokenComma, output6[1].Type)
+	assert.Equal(test, TokenNumber, output6[2].Type)
+	assert.Equal(test, "2", output6[2].Value)
+}
