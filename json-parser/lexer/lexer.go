@@ -22,6 +22,7 @@ const (
 	TokenNumber
 	TokenBoolean
 	TokenNull
+	TokenEOF
 )
 
 type Token struct {
