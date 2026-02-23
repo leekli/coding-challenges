@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io"
 	"json-parser/lexer"
 	"log"
@@ -61,9 +60,5 @@ func main() {
 	}
 	
 	// Pass to the Lexer
-	output := lexer.Lexer(fileContents)
-
-	for i := 0; i < len(output); i++ {
-		fmt.Println(output[i].Value)
-	}
+	lexer.Lexer(fileContents)
 }
