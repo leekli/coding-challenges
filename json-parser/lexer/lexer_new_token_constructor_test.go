@@ -68,15 +68,15 @@ func TestNewTokenConstructor_ReturnsEachTokenType(test *testing.T) {
 	assert.Equal(test, expNumberToken.Value, "1e23")
 	assert.Equal(test, expNumberToken.Length, 4)
 
-	var trueBooleanToken = NewToken(TokenBoolean, "true", 4)
+	var trueBooleanToken = NewToken(TokenTrueBoolean, "true", 4)
 
-	assert.Equal(test, trueBooleanToken.Type, TokenBoolean)
+	assert.Equal(test, trueBooleanToken.Type, TokenTrueBoolean)
 	assert.Equal(test, trueBooleanToken.Value, "true")
 	assert.Equal(test, trueBooleanToken.Length, 4)
 
-	var falseBooleanToken = NewToken(TokenBoolean, "false", 5)
+	var falseBooleanToken = NewToken(TokenFalseBoolean, "false", 5)
 
-	assert.Equal(test, falseBooleanToken.Type, TokenBoolean)
+	assert.Equal(test, falseBooleanToken.Type, TokenFalseBoolean)
 	assert.Equal(test, falseBooleanToken.Value, "false")
 	assert.Equal(test, falseBooleanToken.Length, 5)
 

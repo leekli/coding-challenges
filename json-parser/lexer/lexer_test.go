@@ -109,7 +109,7 @@ func TestLexer_ReturnsTokenList_ForTrueBoolean(test *testing.T) {
 	output := Lexer(testJson)
 
 	assert.Equal(test, len(output), 1)
-	assert.Equal(test, output[0].Type, TokenBoolean)
+	assert.Equal(test, output[0].Type, TokenTrueBoolean)
 	assert.Equal(test, output[0].Value, "true")
 	assert.Equal(test, output[0].Length, 4)
 }
@@ -120,7 +120,7 @@ func TestLexer_ReturnsTokenList_ForFalseBoolean(test *testing.T) {
 	output := Lexer(testJson)
 
 	assert.Equal(test, len(output), 1)
-	assert.Equal(test, output[0].Type, TokenBoolean)
+	assert.Equal(test, output[0].Type, TokenFalseBoolean)
 	assert.Equal(test, output[0].Value, "false")
 	assert.Equal(test, output[0].Length, 5)
 }
@@ -266,7 +266,7 @@ func TestLexer_ReturnsTokenList_ForBracketsWithValueInside(test *testing.T) {
 	assert.Equal(test, len(output), 3)
 	assert.Equal(test, output[0].Type, TokenLeftBracket)
 	assert.Equal(test, output[0].Value, "[")
-	assert.Equal(test, output[1].Type, TokenBoolean)
+	assert.Equal(test, output[1].Type, TokenTrueBoolean)
 	assert.Equal(test, output[1].Value, "true")
 	assert.Equal(test, output[2].Type, TokenRightBracket)
 	assert.Equal(test, output[2].Value, "]")
@@ -278,7 +278,7 @@ func TestLexer_ReturnsTokenList_ForBracketsWithValueInside(test *testing.T) {
 	assert.Equal(test, len(output), 3)
 	assert.Equal(test, output[0].Type, TokenLeftBracket)
 	assert.Equal(test, output[0].Value, "[")
-	assert.Equal(test, output[1].Type, TokenBoolean)
+	assert.Equal(test, output[1].Type, TokenFalseBoolean)
 	assert.Equal(test, output[1].Value, "false")
 	assert.Equal(test, output[2].Type, TokenRightBracket)
 	assert.Equal(test, output[2].Value, "]")
@@ -328,11 +328,11 @@ func TestLexer_ReturnsTokenList_ForBracketsWithMultipleValuesInside(test *testin
 	assert.Equal(test, len(output), 5)
 	assert.Equal(test, output[0].Type, TokenLeftBracket)
 	assert.Equal(test, output[0].Value, "[")
-	assert.Equal(test, output[1].Type, TokenBoolean)
+	assert.Equal(test, output[1].Type, TokenTrueBoolean)
 	assert.Equal(test, output[1].Value, "true")
 	assert.Equal(test, output[2].Type, TokenComma)
 	assert.Equal(test, output[2].Value, ",")
-	assert.Equal(test, output[3].Type, TokenBoolean)
+	assert.Equal(test, output[3].Type, TokenFalseBoolean)
 	assert.Equal(test, output[3].Value, "false")
 	assert.Equal(test, output[4].Type, TokenRightBracket)
 	assert.Equal(test, output[4].Value, "]")
@@ -344,7 +344,7 @@ func TestLexer_ReturnsTokenList_ForBracketsWithMultipleValuesInside(test *testin
 	assert.Equal(test, len(output), 7)
 	assert.Equal(test, output[0].Type, TokenLeftBracket)
 	assert.Equal(test, output[0].Value, "[")
-	assert.Equal(test, output[1].Type, TokenBoolean)
+	assert.Equal(test, output[1].Type, TokenFalseBoolean)
 	assert.Equal(test, output[1].Value, "false")
 	assert.Equal(test, output[2].Type, TokenComma)
 	assert.Equal(test, output[2].Value, ",")
@@ -352,7 +352,7 @@ func TestLexer_ReturnsTokenList_ForBracketsWithMultipleValuesInside(test *testin
 	assert.Equal(test, output[3].Value, "null")
 	assert.Equal(test, output[4].Type, TokenComma)
 	assert.Equal(test, output[4].Value, ",")
-	assert.Equal(test, output[5].Type, TokenBoolean)
+	assert.Equal(test, output[5].Type, TokenTrueBoolean)
 	assert.Equal(test, output[5].Value, "true")
 	assert.Equal(test, output[6].Type, TokenRightBracket)
 	assert.Equal(test, output[6].Value, "]")
@@ -461,7 +461,7 @@ func TestLexer_MixedArray(test *testing.T) {
  	output := Lexer(testJson)
 
  	// Validate presence and sequence of token types (not every value)
- 	expectedTypes := []TokenType{TokenLeftBracket, TokenString, TokenComma, TokenNumber, TokenComma, TokenBoolean, TokenComma, TokenNull, TokenComma, TokenLeftBrace, TokenString, TokenColon, TokenString, TokenRightBrace, TokenRightBracket}
+ 	expectedTypes := []TokenType{TokenLeftBracket, TokenString, TokenComma, TokenNumber, TokenComma, TokenTrueBoolean, TokenComma, TokenNull, TokenComma, TokenLeftBrace, TokenString, TokenColon, TokenString, TokenRightBrace, TokenRightBracket}
 
  	assert.Equal(test, len(output), len(expectedTypes))
 
@@ -541,7 +541,7 @@ func TestLexer_NestedStructures_NumbersAndStrings(test *testing.T) {
 func TestLexer_MultipleTokensSequence(test *testing.T) {
 	input := "true,false,null,0"
 	out := Lexer(input)
-	expected := []TokenType{TokenBoolean, TokenComma, TokenBoolean, TokenComma, TokenNull, TokenComma, TokenNumber}
+	expected := []TokenType{TokenTrueBoolean, TokenComma, TokenFalseBoolean, TokenComma, TokenNull, TokenComma, TokenNumber}
 	assert.Equal(test, len(expected), len(out))
 	for i := range expected {
 		assert.Equal(test, expected[i], out[i].Type)
@@ -660,7 +660,7 @@ func TestLexer_NewLine_TokenHandling(test *testing.T) {
 	input5 := "\ntrue\n"
 	output5 := Lexer(input5)
 	assert.Equal(test, 1, len(output5))
-	assert.Equal(test, TokenBoolean, output5[0].Type)
+	assert.Equal(test, TokenTrueBoolean, output5[0].Type)
 	assert.Equal(test, "true", output5[0].Value)
 
 	input6 := "\n\n1,2\n\n"
@@ -699,7 +699,7 @@ func TestLexer_CarriageReturn_TokenHandling(test *testing.T) {
 	input5 := "\rtrue\r"
 	output5 := Lexer(input5)
 	assert.Equal(test, 1, len(output5))
-	assert.Equal(test, TokenBoolean, output5[0].Type)
+	assert.Equal(test, TokenTrueBoolean, output5[0].Type)
 	assert.Equal(test, "true", output5[0].Value)
 
 	input6 := "\r\r1,2\r\r"
@@ -738,7 +738,7 @@ func TestLexer_Tab_TokenHandling(test *testing.T) {
 	input5 := "\ttrue\t"
 	output5 := Lexer(input5)
 	assert.Equal(test, 1, len(output5))
-	assert.Equal(test, TokenBoolean, output5[0].Type)
+	assert.Equal(test, TokenTrueBoolean, output5[0].Type)
 	assert.Equal(test, "true", output5[0].Value)
 
 	input6 := "\t\t1,2\t\t"
@@ -777,7 +777,7 @@ func TestLexer_NestedArraysAndObjects(test *testing.T) {
 	input := `[{"a": [1, 2, {"b": false}], "c": null}, 42]`
 	out := Lexer(input)
 	expectedTypes := []TokenType{
-		TokenLeftBracket, TokenLeftBrace, TokenString, TokenColon, TokenLeftBracket, TokenNumber, TokenComma, TokenNumber, TokenComma, TokenLeftBrace, TokenString, TokenColon, TokenBoolean, TokenRightBrace, TokenRightBracket, TokenComma, TokenString, TokenColon, TokenNull, TokenRightBrace, TokenComma, TokenNumber, TokenRightBracket,
+		TokenLeftBracket, TokenLeftBrace, TokenString, TokenColon, TokenLeftBracket, TokenNumber, TokenComma, TokenNumber, TokenComma, TokenLeftBrace, TokenString, TokenColon, TokenFalseBoolean, TokenRightBrace, TokenRightBracket, TokenComma, TokenString, TokenColon, TokenNull, TokenRightBrace, TokenComma, TokenNumber, TokenRightBracket,
 	}
 	assert.Equal(test, len(expectedTypes), len(out))
 	for i, tt := range expectedTypes {
@@ -801,7 +801,7 @@ func TestLexer_ComplexObjectWithAllTypes(test *testing.T) {
 	input := `{"str": "hello", "num": 123, "arr": [true, false, null, 1.5], "obj": {"k": "v"}, "bool": true, "nul": null}`
 	out := Lexer(input)
 	expectedTypes := []TokenType{
-		TokenLeftBrace, TokenString, TokenColon, TokenString, TokenComma, TokenString, TokenColon, TokenNumber, TokenComma, TokenString, TokenColon, TokenLeftBracket, TokenBoolean, TokenComma, TokenBoolean, TokenComma, TokenNull, TokenComma, TokenNumber, TokenRightBracket, TokenComma, TokenString, TokenColon, TokenLeftBrace, TokenString, TokenColon, TokenString, TokenRightBrace, TokenComma, TokenString, TokenColon, TokenBoolean, TokenComma, TokenString, TokenColon, TokenNull, TokenRightBrace,
+		TokenLeftBrace, TokenString, TokenColon, TokenString, TokenComma, TokenString, TokenColon, TokenNumber, TokenComma, TokenString, TokenColon, TokenLeftBracket, TokenTrueBoolean, TokenComma, TokenFalseBoolean, TokenComma, TokenNull, TokenComma, TokenNumber, TokenRightBracket, TokenComma, TokenString, TokenColon, TokenLeftBrace, TokenString, TokenColon, TokenString, TokenRightBrace, TokenComma, TokenString, TokenColon, TokenTrueBoolean, TokenComma, TokenString, TokenColon, TokenNull, TokenRightBrace,
 	}
 	assert.Equal(test, len(expectedTypes), len(out))
 	for i, tt := range expectedTypes {
@@ -837,7 +837,7 @@ func TestLexer_ComplexArrayWithObjectsAndValues(test *testing.T) {
 	input := `[{"x": 1}, {"y": 2}, [3, 4, {"z": 5}], true, null, "str"]`
 	out := Lexer(input)
 	expectedTypes := []TokenType{
-		TokenLeftBracket, TokenLeftBrace, TokenString, TokenColon, TokenNumber, TokenRightBrace, TokenComma, TokenLeftBrace, TokenString, TokenColon, TokenNumber, TokenRightBrace, TokenComma, TokenLeftBracket, TokenNumber, TokenComma, TokenNumber, TokenComma, TokenLeftBrace, TokenString, TokenColon, TokenNumber, TokenRightBrace, TokenRightBracket, TokenComma, TokenBoolean, TokenComma, TokenNull, TokenComma, TokenString, TokenRightBracket,
+		TokenLeftBracket, TokenLeftBrace, TokenString, TokenColon, TokenNumber, TokenRightBrace, TokenComma, TokenLeftBrace, TokenString, TokenColon, TokenNumber, TokenRightBrace, TokenComma, TokenLeftBracket, TokenNumber, TokenComma, TokenNumber, TokenComma, TokenLeftBrace, TokenString, TokenColon, TokenNumber, TokenRightBrace, TokenRightBracket, TokenComma, TokenTrueBoolean, TokenComma, TokenNull, TokenComma, TokenString, TokenRightBracket,
 	}
 	assert.Equal(test, len(expectedTypes), len(out))
 	for i, tt := range expectedTypes {

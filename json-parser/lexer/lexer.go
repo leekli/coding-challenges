@@ -20,7 +20,8 @@ const (
 	TokenComma
 	TokenString
 	TokenNumber
-	TokenBoolean
+	TokenTrueBoolean
+	TokenFalseBoolean
 	TokenNull
 	TokenEOF
 )
@@ -93,7 +94,7 @@ func Lexer(jsonInput string) []Token {
 			case "t":
 				len := 4
 
-				token := NewToken(TokenBoolean, "true", len)
+				token := NewToken(TokenTrueBoolean, "true", len)
 				tokenList = append(tokenList, token)		
 				
 				stringPointer += len
@@ -101,7 +102,7 @@ func Lexer(jsonInput string) []Token {
 			case "f":
 				len := 5
 
-				token := NewToken(TokenBoolean, "false", len)
+				token := NewToken(TokenFalseBoolean, "false", len)
 				tokenList = append(tokenList, token)		
 				
 				stringPointer += len
