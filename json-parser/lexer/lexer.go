@@ -2,7 +2,6 @@ package lexer
 
 import (
 	"fmt"
-	"log"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -134,7 +133,7 @@ func Lexer(jsonInput string) []Token {
 				stringValue, err := ExtractString(jsonInput, stringPointer)
 
 				if err != nil {
-					log.Fatalf("❌ JSON Lexer: String extraction encountered an issue: %v", err)
+					panic("❌ JSON Lexer: String extraction encountered an issue")
 				}
 
 				stringLen := len(stringValue)
@@ -148,7 +147,7 @@ func Lexer(jsonInput string) []Token {
 				numValue, err := ExtractNumber(jsonInput, stringPointer)
 
 				if err != nil {
-					log.Fatalf("❌ JSON Lexer: Number extraction encountered an issue: %v", err)
+					panic("❌ JSON Lexer: Number extraction encountered an issue")
 				}
 
 				numLen := len(numValue)

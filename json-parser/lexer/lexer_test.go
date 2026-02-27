@@ -480,6 +480,91 @@ func TestLexer_NumberTokenLength(test *testing.T) {
 	}
 }
 
+// --- PANIC COVERAGE: Lexer panics on invalid string/number extraction ---
+func TestLexer_PanicsOnUnterminatedString(test *testing.T) {
+	input := `"unterminated`
+	didPanic := false
+	func() {
+		defer func() {
+			if r := recover(); r != nil {
+				didPanic = true
+			}
+		}()
+		_ = Lexer(input)
+	}()
+	assert.True(test, didPanic, "Lexer should panic on unterminated string")
+}
+
+func TestLexer_PanicsOnInvalidEscapeInString(test *testing.T) {
+	input := `"\x"`
+	didPanic := false
+	func() {
+		defer func() {
+			if r := recover(); r != nil {
+				didPanic = true
+			}
+		}()
+		_ = Lexer(input)
+	}()
+	assert.True(test, didPanic, "Lexer should panic on invalid escape in string")
+}
+
+func TestLexer_PanicsOnIncompleteUnicodeEscape(test *testing.T) {
+	input := `"\u123"`
+	didPanic := false
+	func() {
+		defer func() {
+			if r := recover(); r != nil {
+				didPanic = true
+			}
+		}()
+		_ = Lexer(input)
+	}()
+	assert.True(test, didPanic, "Lexer should panic on incomplete unicode escape")
+}
+
+// func TestLexer_PanicsOnUnescapedControlCharacter(test *testing.T) {
+// 	input := "\x01"
+// 	didPanic := false
+// 	func() {
+// 		defer func() {
+// 			if r := recover(); r != nil {
+// 				didPanic = true
+// 			}
+// 		}()
+// 		_ = Lexer(input)
+// 	}()
+// 	assert.True(test, didPanic, "Lexer should panic on unescaped control character in string")
+// }
+
+// func TestLexer_PanicsOnInvalidNumberLeadingZero(test *testing.T) {
+// 	input := "01"
+// 	didPanic := false
+// 	func() {
+// 		defer func() {
+// 			if r := recover(); r != nil {
+// 				didPanic = true
+// 			}
+// 		}()
+// 		_ = Lexer(input)
+// 	}()
+// 	assert.True(test, didPanic, "Lexer should panic on number with leading zero")
+// }
+
+func TestLexer_PanicsOnInvalidNumberJustMinus(test *testing.T) {
+	input := "-"
+	didPanic := false
+	func() {
+		defer func() {
+			if r := recover(); r != nil {
+				didPanic = true
+			}
+		}()
+		_ = Lexer(input)
+	}()
+	assert.True(test, didPanic, "Lexer should panic on just minus sign as number")
+}
+
 func TestLexer_AdjacentPunctuationNoSpaces(test *testing.T) {
 	input := "[1,2,3]"
 	out := Lexer(input)
