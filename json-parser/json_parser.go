@@ -3,7 +3,6 @@ package main
 import (
 	"io"
 	"json-parser/lexer"
-	"log"
 	"os"
 )
 
@@ -38,25 +37,25 @@ func main() {
 	argsGiven := os.Args
 
 	if argsGiven == nil {
-		log.Fatalf("❌ JSON Parser: No arguments given.")
+		panic("❌ JSON Parser: No arguments given.")
 	}
 
 	if len(argsGiven) < 2 {
-		log.Fatalf("❌ JSON Parser: You must supply a file path.")
+		panic("❌ JSON Parser: You must supply a file path.")
 	}
 
 	// Get the given file path from the user args & check it exists
 	filePathGiven := argsGiven[1]
 
 	if !CheckFileExists(filePathGiven) {
-		log.Fatalf("❌ JSON Parser: Given file does not exist, or file is not valid.")
+		panic("❌ JSON Parser: Given file does not exist, or file is not valid.")
 	}
 
 	// Read the given file, returned as string representation, check for error
 	fileContents, err := ReadFileStream(filePathGiven)
 
 	if err != nil {
-		log.Fatalf("❌ JSON Parser: There was an error with reading the file.")
+		panic("❌ JSON Parser: There was an error with reading the file.")
 	}
 	
 	// Pass to the Lexer
