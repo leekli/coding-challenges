@@ -2,7 +2,6 @@ package parser
 
 import (
 	"json-parser/lexer"
-	"log"
 )
 
 // Helper functions
@@ -28,8 +27,6 @@ func Consume(tokenList []lexer.Token, currentIndex int, expectedTokenType lexer.
 		newIndex++
 		return token, newIndex
 	} else {
-		log.Fatalf("❌ JSON Parser: Unexpected token type")
+		panic("❌ JSON Parser: Unexpected token type")
 	}
-
-	return token, newIndex
 }

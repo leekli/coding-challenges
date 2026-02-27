@@ -68,6 +68,23 @@ func TestConsume_HappyPath_ReturnsTokenAndIndex(t *testing.T) {
 	assert.Equal(t, 1, newIndex)
 }
 
+// Consume sad path: unexpected token type should panic
+func TestConsume_UnexpectedTokenType_Panics(t *testing.T) {
+	tokens := []lexer.Token{
+		lexer.NewToken(lexer.TokenLeftBrace, "{", 1),
+	}
+	didPanic := false
+	func() {
+		defer func() {
+			if r := recover(); r != nil {
+				didPanic = true
+			}
+		}()
+		_, _ = Consume(tokens, 0, lexer.TokenRightBrace) // Expect panic
+	}()
+	assert.True(t, didPanic, "Consume should panic for unexpected token type")
+}
+
 // Consume happy path at EOF: requesting EOF at end returns EOF token and advances index
 func TestConsume_HappyPath_EOFAtEnd(t *testing.T) {
 	tokens := []lexer.Token{}
