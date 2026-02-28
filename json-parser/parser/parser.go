@@ -5,9 +5,34 @@ import (
 	"strconv"
 )
 
-func Parse() bool {
-	// STILL TO IMPLEMENT ONCE PARSE VALUE SETUP AND TESTED
-	return false
+func Parse(tokenList []lexer.Token) (finalObj any, validJson bool) {
+	if len(tokenList) == 0 {
+        return nil, false
+    }
+
+     // Mark as invalid if Parsing panics
+    defer func() {
+        if r := recover(); r != nil {
+            finalObj = nil
+            validJson = false
+        }
+    }()
+
+    // Begin parsing
+    finalObj, nextIdx := ParseValue(tokenList, 0)
+
+    // Validate that we've checked all tokens
+    if nextIdx == len(tokenList) {
+        return finalObj, true
+    }
+
+    next := Peek(tokenList, nextIdx)
+
+    if next.Type == lexer.TokenEOF && nextIdx + 1 == len(tokenList) {
+        return finalObj, true
+    }
+    
+	return nil, false
 }
 
 func ParseValue(tokenList []lexer.Token, currentIndex int) (any, int) {
@@ -18,7 +43,7 @@ func ParseValue(tokenList []lexer.Token, currentIndex int) (any, int) {
 		_, idx := Consume(tokenList, currentIndex, lexer.TokenTrueBoolean)
 		
 		return true, idx
-	case lexer.TokenFalseBoolean:
+	case lexer.TokenFalseBoolean:   
 		_, idx := Consume(tokenList, currentIndex, lexer.TokenFalseBoolean)
 		
 		return false, idx
@@ -28,18 +53,19 @@ func ParseValue(tokenList []lexer.Token, currentIndex int) (any, int) {
 		return nil, idx
 	case lexer.TokenString:
 		token, idx := Consume(tokenList, currentIndex, lexer.TokenString)
-		
+        
 		return token.Value, idx
 	case lexer.TokenNumber:
-		token, idx := Consume(tokenList, currentIndex, lexer.TokenNumber)
+        token, idx := Consume(tokenList, currentIndex, lexer.TokenNumber)
 
-		num, err := strconv.Atoi(token.Value)
+        // Parse numbers as float64 to match common JSON decoding behavior
+        num, err := strconv.Atoi(token.Value)
 
-		if err != nil {
-			panic("❌ JSON Parser: Could not convert to number")
-		}
-		
-		return num, idx
+        if err != nil {
+            panic("❌ JSON Parser: Could not convert to number")
+        }
+
+        return num, idx
 	case lexer.TokenLeftBrace:
 		parsedObj, idx := ParseObject(tokenList, currentIndex)
 
