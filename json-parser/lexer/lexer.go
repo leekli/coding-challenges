@@ -47,6 +47,17 @@ func Lexer(jsonInput string) []Token {
 
 			charIsDigit := unicode.IsDigit(rune(jsonInput[stringPointer]))
 
+			// Positive number value
+			if charIsDigit {
+				numValue, _ := ExtractNumber(jsonInput, stringPointer)
+				numLen := len(numValue)
+
+				token := NewToken(TokenNumber, numValue, numLen)
+				tokenList = append(tokenList, token)		
+				
+				stringPointer += numLen
+			}
+
 			switch currentChar {
 			// Whitespace (Skip)
 			case " ":
@@ -156,17 +167,20 @@ func Lexer(jsonInput string) []Token {
 				tokenList = append(tokenList, token)		
 				
 				stringPointer += numLen
-			}
+			// Any other unexpected character -> fail early instead of looping forever
+			default:
+				// If it's a letter (e.g. 'F' for 'False'), read the whole identifier for a clearer error
+				if stringPointer < len(jsonInput) && unicode.IsLetter(rune(jsonInput[stringPointer])) {
+					start := stringPointer
 
-			// Positive number value
-			if charIsDigit {
-				numValue, _ := ExtractNumber(jsonInput, stringPointer)
-				numLen := len(numValue)
+					for stringPointer < len(jsonInput) && unicode.IsLetter(rune(jsonInput[stringPointer])) {
+						stringPointer++
+					}
 
-				token := NewToken(TokenNumber, numValue, numLen)
-				tokenList = append(tokenList, token)		
-				
-				stringPointer += numLen
+					badValue := jsonInput[start:stringPointer]
+					
+					panic(fmt.Sprintf("❌ JSON Invalid: Unexpected literal %q: ", badValue))
+				}
 			}
 		}		
 	}

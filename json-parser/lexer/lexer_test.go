@@ -565,6 +565,20 @@ func TestLexer_PanicsOnInvalidNumberJustMinus(test *testing.T) {
 	assert.True(test, didPanic, "Lexer should panic on just minus sign as number")
 }
 
+func TestLexer_PanicsOnUppercaseBooleanLiteral(test *testing.T) {
+	input := "False"
+	didPanic := false
+	func() {
+		defer func() {
+			if r := recover(); r != nil {
+				didPanic = true
+			}
+		}()
+		_ = Lexer(input)
+	}()
+	assert.True(test, didPanic, "Lexer should panic on unexpected literal 'False'")
+}
+
 func TestLexer_AdjacentPunctuationNoSpaces(test *testing.T) {
 	input := "[1,2,3]"
 	out := Lexer(input)
