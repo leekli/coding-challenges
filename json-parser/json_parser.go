@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"json-parser/lexer"
+	"json-parser/parser"
 	"os"
 )
 
@@ -59,5 +61,14 @@ func main() {
 	}
 	
 	// Pass to the Lexer
-	lexer.Lexer(fileContents)
+	tokenList := lexer.Lexer(fileContents)
+
+	// Pass token list to the parser
+	_, validJson := parser.Parse(tokenList)
+
+	if validJson {
+		fmt.Println("✅ The provided JSON file is VALID")
+	} else {
+		fmt.Println("❌ The provided JSON file is INVALID")
+	}
 }
