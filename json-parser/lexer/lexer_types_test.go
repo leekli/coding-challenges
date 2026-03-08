@@ -20,4 +20,5 @@ func TestTokenTypesConst_ChecksExistenceOfTokenTypes(test *testing.T) {
 	assert.Equal(test, TokenType(9), TokenFalseBoolean)
 	assert.Equal(test, TokenType(10), TokenNull)
 	assert.Equal(test, TokenType(11), TokenEOF)
+	assert.Equal(test, TokenType(12), TokenIllegal)
 }

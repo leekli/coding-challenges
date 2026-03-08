@@ -28,6 +28,10 @@ func Parse(tokenList []lexer.Token) (finalObj any, validJson bool) {
 
     next := Peek(tokenList, nextIdx)
 
+    if next.Type == lexer.TokenIllegal {
+        return nil, false
+    }
+
     if next.Type == lexer.TokenEOF && nextIdx + 1 == len(tokenList) {
         return finalObj, true
     }
@@ -57,8 +61,7 @@ func ParseValue(tokenList []lexer.Token, currentIndex int) (any, int) {
 		return token.Value, idx
 	case lexer.TokenNumber:
         token, idx := Consume(tokenList, currentIndex, lexer.TokenNumber)
-
-        // Parse numbers as float64 to match common JSON decoding behavior
+        
         num, err := strconv.Atoi(token.Value)
 
         if err != nil {

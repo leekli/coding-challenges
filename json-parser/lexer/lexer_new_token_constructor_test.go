@@ -85,4 +85,16 @@ func TestNewTokenConstructor_ReturnsEachTokenType(test *testing.T) {
 	assert.Equal(test, nullToken.Type, TokenNull)
 	assert.Equal(test, nullToken.Value, "null")
 	assert.Equal(test, nullToken.Length, 4)
+
+	var eofToken = NewToken(TokenEOF, "", 0)
+
+	assert.Equal(test, eofToken.Type, TokenEOF)
+	assert.Equal(test, eofToken.Value, "")
+	assert.Equal(test, eofToken.Length, 0)
+
+	var illegalToken = NewToken(TokenIllegal, "", 0)
+
+	assert.Equal(test, illegalToken.Type, TokenIllegal)
+	assert.Equal(test, illegalToken.Value, "")
+	assert.Equal(test, illegalToken.Length, 0)
 }

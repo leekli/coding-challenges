@@ -481,102 +481,59 @@ func TestLexer_NumberTokenLength(test *testing.T) {
 }
 
 // --- PANIC COVERAGE: Lexer panics on invalid string/number extraction ---
-func TestLexer_PanicsOnUnterminatedString(test *testing.T) {
+func TestLexer_ReturnsIllegalToken_OnUnterminatedString(test *testing.T) {
 	input := `"unterminated`
-	didPanic := false
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				didPanic = true
-			}
-		}()
-		_ = Lexer(input)
-	}()
-	assert.True(test, didPanic, "Lexer should panic on unterminated string")
+
+	output := Lexer(input)
+
+ 	assert.Equal(test, len(output), 1)
+ 	assert.Equal(test, output[0].Type, TokenIllegal)
+ 	assert.Equal(test, output[0].Value, "")
+ 	assert.Equal(test, output[0].Length, 0)
 }
 
-func TestLexer_PanicsOnInvalidEscapeInString(test *testing.T) {
+func TestLexer_ReturnsIllegalToken_OnInvalidEscapeInString(test *testing.T) {
 	input := `"\x"`
-	didPanic := false
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				didPanic = true
-			}
-		}()
-		_ = Lexer(input)
-	}()
-	assert.True(test, didPanic, "Lexer should panic on invalid escape in string")
+
+	output := Lexer(input)
+
+ 	assert.Equal(test, len(output), 1)
+ 	assert.Equal(test, output[0].Type, TokenIllegal)
+ 	assert.Equal(test, output[0].Value, "")
+ 	assert.Equal(test, output[0].Length, 0)
 }
 
-func TestLexer_PanicsOnIncompleteUnicodeEscape(test *testing.T) {
+func TestLexer_ReturnsIllegalToken_OnIncompleteUnicodeEscape(test *testing.T) {
 	input := `"\u123"`
-	didPanic := false
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				didPanic = true
-			}
-		}()
-		_ = Lexer(input)
-	}()
-	assert.True(test, didPanic, "Lexer should panic on incomplete unicode escape")
+
+	output := Lexer(input)
+
+ 	assert.Equal(test, len(output), 1)
+ 	assert.Equal(test, output[0].Type, TokenIllegal)
+ 	assert.Equal(test, output[0].Value, "")
+ 	assert.Equal(test, output[0].Length, 0)
 }
 
-// func TestLexer_PanicsOnUnescapedControlCharacter(test *testing.T) {
-// 	input := "\x01"
-// 	didPanic := false
-// 	func() {
-// 		defer func() {
-// 			if r := recover(); r != nil {
-// 				didPanic = true
-// 			}
-// 		}()
-// 		_ = Lexer(input)
-// 	}()
-// 	assert.True(test, didPanic, "Lexer should panic on unescaped control character in string")
-// }
-
-// func TestLexer_PanicsOnInvalidNumberLeadingZero(test *testing.T) {
-// 	input := "01"
-// 	didPanic := false
-// 	func() {
-// 		defer func() {
-// 			if r := recover(); r != nil {
-// 				didPanic = true
-// 			}
-// 		}()
-// 		_ = Lexer(input)
-// 	}()
-// 	assert.True(test, didPanic, "Lexer should panic on number with leading zero")
-// }
-
-func TestLexer_PanicsOnInvalidNumberJustMinus(test *testing.T) {
+func TestLexer_ReturnsIllegalToken_OnInvalidNumberJustMinus(test *testing.T) {
 	input := "-"
-	didPanic := false
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				didPanic = true
-			}
-		}()
-		_ = Lexer(input)
-	}()
-	assert.True(test, didPanic, "Lexer should panic on just minus sign as number")
+	
+	output := Lexer(input)
+
+ 	assert.Equal(test, len(output), 1)
+ 	assert.Equal(test, output[0].Type, TokenIllegal)
+ 	assert.Equal(test, output[0].Value, "")
+ 	assert.Equal(test, output[0].Length, 0)
 }
 
-func TestLexer_PanicsOnUppercaseBooleanLiteral(test *testing.T) {
+func TestLexer_ReturnsIllegalToken_OnUppercaseBooleanLiteral(test *testing.T) {
 	input := "False"
-	didPanic := false
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				didPanic = true
-			}
-		}()
-		_ = Lexer(input)
-	}()
-	assert.True(test, didPanic, "Lexer should panic on unexpected literal 'False'")
+
+ 	output := Lexer(input)
+
+ 	assert.Equal(test, len(output), 1)
+ 	assert.Equal(test, output[0].Type, TokenIllegal)
+ 	assert.Equal(test, output[0].Value, "False")
+ 	assert.Equal(test, output[0].Length, 5)
 }
 
 func TestLexer_AdjacentPunctuationNoSpaces(test *testing.T) {

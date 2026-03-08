@@ -23,6 +23,7 @@ const (
 	TokenFalseBoolean
 	TokenNull
 	TokenEOF
+	TokenIllegal
 )
 
 type Token struct {
@@ -144,7 +145,11 @@ func Lexer(jsonInput string) []Token {
 				stringValue, err := ExtractString(jsonInput, stringPointer)
 
 				if err != nil {
-					panic("❌ JSON Lexer: String extraction encountered an issue")
+					// An illegal token is created, no point continuing lexical analysis. Parser will deal with this later
+					token := NewToken(TokenIllegal, "", 0)
+					tokenList = append(tokenList, token)	
+
+					return tokenList
 				}
 
 				stringLen := len(stringValue)
@@ -158,7 +163,11 @@ func Lexer(jsonInput string) []Token {
 				numValue, err := ExtractNumber(jsonInput, stringPointer)
 
 				if err != nil {
-					panic("❌ JSON Lexer: Number extraction encountered an issue")
+					// An illegal token is created, no point continuing lexical analysis. Parser will deal with this later
+					token := NewToken(TokenIllegal, "", 0)
+					tokenList = append(tokenList, token)	
+
+					return tokenList
 				}
 
 				numLen := len(numValue)
@@ -169,6 +178,15 @@ func Lexer(jsonInput string) []Token {
 				stringPointer += numLen
 			// Any other unexpected character -> fail early instead of looping forever
 			default:
+				// If illegal starting string (single quote) is identified
+				if currentChar == `'` {
+					// An illegal token is created, no point continuing lexical analysis. Parser will deal with this later
+					token := NewToken(TokenIllegal, "", 0)
+					tokenList = append(tokenList, token)	
+
+					return tokenList
+				}
+
 				// If it's a letter (e.g. 'F' for 'False'), read the whole identifier for a clearer error
 				if stringPointer < len(jsonInput) && unicode.IsLetter(rune(jsonInput[stringPointer])) {
 					start := stringPointer
@@ -178,8 +196,13 @@ func Lexer(jsonInput string) []Token {
 					}
 
 					badValue := jsonInput[start:stringPointer]
+					badValueLen := len(badValue)
 					
-					panic(fmt.Sprintf("❌ JSON Invalid: Unexpected literal %q: ", badValue))
+					// An illegal token is created, no point continuing lexical analysis. Parser will deal with this later
+					token := NewToken(TokenIllegal, badValue, badValueLen)
+					tokenList = append(tokenList, token)	
+
+					return tokenList
 				}
 			}
 		}		

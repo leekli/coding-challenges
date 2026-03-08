@@ -44,3 +44,6 @@ $ ./json_parser testdata/step4/valid.json
 ```
 
 <br></br>
+
+> [!NOTE]
+> Outstanding functionality: Number parsing should be able to deal with floats/decimals and exponents. Currently does not!
